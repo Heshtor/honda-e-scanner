@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Light Mode (Honda e Clean Daylight Theme) -->
+    <color name="colorPrimary">#1A1C20</color>
+    <color name="colorPrimaryDark">#0F1013</color>
+    <color name="colorAccent">#00838F</color>
+    <color name="colorBtnText">#FFFFFF</color>
+    <color name="colorText">#191C1E</color>
+    <color name="colorTextSecondary">#5C6065</color>
+    <color name="colorBg">#F2F4F7</color>
+    <color name="colorCard">#FFFFFF</color>
+    <color name="colorNavBg">#FFFFFF</color>
+    <color name="colorNavDivider">#E2E4E9</color>
+    <color name="colorHighlight">#E9ECEF</color>
+    <color name="colorRegen">#0D7A48</color>
+    <color name="colorCharging">#0D7A48</color>
+    <color name="colorDischarge">#D9531E</color>
+    <color name="colorWarning">#D32F2F</color>
+</resources>

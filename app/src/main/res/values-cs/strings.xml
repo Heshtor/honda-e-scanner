@@ -1,0 +1,156 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name">Honda e Scanner</string>
+    <string name="messages">Zprávy:</string>
+    <string name="paired_devices">Spárovaná zařízení:</string>
+    <string name="no_bluetooth">Bluetooth není k dispozici.</string>
+    <string name="device_name_format">Zařízení: %1$s</string>
+    <string name="status_connecting">Stav: Připojování</string>
+    <string name="status_connected">Stav: Připojeno</string>
+    <string name="status_disconnected">Stav: Odpojeno</string>
+    <string name="stop">Zastavit</string>
+    <string name="connect">Připojit</string>
+    <string name="connected">Připojeno</string>
+    <string name="disconnect">Odpojit</string>
+    <string name="connection_failed">Připojení selhalo.</string>
+    <string name="bluetooth_unavailable">Bluetooth nedostupný.</string>
+    <string name="message_send_error">Chyba při odesílání!</string>
+
+    <!-- Logging & Export -->
+    <string name="share_log_button">📤 Sdílet diagnostický záznam (log)</string>
+    <string name="demo_button">🎮 Demo data</string>
+    <string name="demo_button_stop">⏹️ Zastavit Demo</string>
+    <string name="main_demo_button">🎮 Spustit Demo režim (bez auta)</string>
+    <string name="status_demo">Stav: Demo režim (Simulace)</string>
+    <string name="demo_active_toast">Demo režim aktivován: zobrazeny vzorové hodnoty vozidla.</string>
+    <string name="demo_stopped_toast">Demo režim ukončen.</string>
+    <string name="log_export_error">Nepodařilo se připravit log: %1$s</string>
+    <string name="no_log_to_export">Zatím nebyl zaznamenán žádný log. Připojte se k vozidlu.</string>
+    <string name="share_chooser_title">Sdílet diagnostický log</string>
+
+    <!-- Card 1: Battery & Range -->
+    <string name="battery_and_range">Baterie a dojezd</string>
+    <string name="soc_dash_title">Nabití baterie (SoC)</string>
+    <string name="soc_cells_title">Nabití článků (min / max)</string>
+    <string name="soc_delta_title">Rozdíl nabití článků (Δ)</string>
+    <string name="cell_voltage_title">Napětí článků (min / max)</string>
+    <string name="cell_delta_title">Rozdíl napětí článků (Δ)</string>
+    <string name="soh">Zdraví baterie (SoH)</string>
+    <string name="remaining_energy">Využitelná čistá energie</string>
+    <string name="range_dash_title">Dojezd (palubní displej)</string>
+    <string name="range_estimate_title">Dojezd dle spotřeby (min / max)</string>
+
+    <!-- Card 2: Power & Charging -->
+    <string name="power_and_charging">Výkon a nabíjení</string>
+    <string name="charging_status_title">Stav nabíjení</string>
+    <string name="not_charging">Nenabíjí se</string>
+    <string name="charging_ac">Nabíjení AC (palubní nabíječka)</string>
+    <string name="charging_dc">Rychlonabíjení DC (CCS stojan)</string>
+    <string name="charge_power_title">Vstup nabíjení (do baterie)</string>
+    <string name="power_instant_title">Okamžitý výkon</string>
+    <string name="consumption_instant_title">Okamžitá spotřeba</string>
+    <string name="battery_current_title">Proud trakční baterie</string>
+    <string name="battery_voltage_title">Napětí trakční baterie</string>
+    <string name="battery_voltage_format">%1$.1f V (%2$.2f V/čl.)</string>
+
+    <!-- Navigation Tabs -->
+    <string name="tab_overview">📊 Přehled</string>
+    <string name="tab_soh_test">🔋 Test SoH</string>
+    <string name="tab_settings">⚙️ Nastavení</string>
+
+    <!-- Settings Tab -->
+    <string name="settings_demo_title">Simulace a demo režim</string>
+    <string name="settings_demo_desc">Vyplní aplikaci vzorovými hodnotami pro otestování rozhraní a výpočtů bez nutnosti připojení k vozu.</string>
+    <string name="settings_log_title">Diagnostický záznam (CAN Log)</string>
+    <string name="settings_log_desc">Zaznamenává komunikaci po CAN sběrnici do souboru. Log můžete exportovat a sdílet pro diagnostiku nebo řešení potíží.</string>
+    <string name="settings_language_title">Jazyk aplikace / Language</string>
+    <string name="settings_language_desc">Vyberte preferovaný jazyk uživatelského rozhraní.</string>
+    <string name="lang_czech">Čeština</string>
+    <string name="lang_english">English</string>
+    <string name="settings_theme_title">Vzhled aplikace / Motiv</string>
+    <string name="settings_theme_desc">Vyberte tmavý, světlý nebo systémový režim zobrazení.</string>
+    <string name="theme_dark">🌙 Tmavý režim</string>
+    <string name="theme_light">☀️ Světlý režim</string>
+    <string name="theme_system">📱 Podle systému</string>
+
+    <!-- Battery SoH Test Mode -->
+    <string name="soh_test_control_title">Ovládání měření kapacity a SoH</string>
+    <string name="soh_test_status_idle">Stav: Připraveno ke spuštění</string>
+    <string name="soh_test_status_running">Stav: Měření kapacity probíhá (vysokorychlostní vzorkování)...</string>
+    <string name="soh_test_status_finished">Stav: Test dokončen a vyhodnocen</string>
+    <string name="soh_test_btn_start">▶️ ZAHÁJIT TEST SOH</string>
+    <string name="soh_test_btn_stop">⏹️ UKONČIT TEST A VYHODNOTIT</string>
+    <string name="soh_test_live_title">Průběh aktuálního měření</string>
+    <string name="soh_test_elapsed_time_title">Uplynulý čas</string>
+    <string name="soh_test_samples_title">Počet vzorků</string>
+    <string name="soh_test_power_title">Okamžitý výkon / proud</string>
+    <string name="soh_test_discharge_regen_title">Vybito / Rekuperováno</string>
+
+    <!-- SoH Test Results -->
+    <string name="soh_test_result_title">Výsledky testu kapacity baterie</string>
+    <string name="soh_test_result_soh_label">Vypočtené zdraví baterie (SoH)</string>
+    <string name="soh_test_result_cnetto_title">Využitelná netto kapacita</string>
+    <string name="soh_test_result_deltasoc_title">Úbytek nabití (Δ SoC)</string>
+    <string name="soh_test_result_energy_title">Čistá spotřebovaná energie</string>
+    <string name="soh_test_result_distance_title">Ujetá vzdálenost</string>
+    <string name="soh_test_result_consumption_title">Průměrná spotřeba za test</string>
+    <string name="soh_test_result_duration_title">Doba trvání testu</string>
+    <string name="soh_test_locked_toast">Měření SoH je aktivní. Pro přepnutí záložky nejprve ukončete test.</string>
+    <string name="soh_test_not_enough_soc" formatted="false">Pokles SoC byl příliš malý (&lt; 1 %). Pro spolehlivý výpočet vybijte alespoň 30–60 % baterie.</string>
+
+    <!-- Card 3: Temperatures & Diagnostics -->
+    <string name="temperatures_and_diagnostics">Teploty a diagnostika</string>
+    <string name="bat_temp_title">Teplota trakční baterie</string>
+    <string name="bat_temp_range_title">Rozsah teplot (min / max)</string>
+    <string name="bat_temp_delta_title">Rozptyl teplot baterie (Δ)</string>
+    <string name="inverter_temp">Teplota invertoru / PCU</string>
+    <string name="amb_temp">Venkovní teplota okolí</string>
+    <string name="aux_bat">12V palubní akumulátor</string>
+
+    <!-- Card 4: Vehicle Info & Drive -->
+    <string name="vehicle_info">Informace o vozidle a jízda</string>
+    <string name="odo">Tachometr (ODO)</string>
+    <string name="speed">Rychlost vozidla</string>
+    <string name="motor_rpm">Otáčky elektromotoru</string>
+    <string name="gear_direction">Jízdní režim / pohon</string>
+    <string name="location_phone_title">GPS souřadnice (mobil)</string>
+    <string name="height_phone_title">Nadmořská výška (GPS)</string>
+    <string name="vin">VIN kód vozidla</string>
+
+    <string name="channel_name">Zkušební kanál</string>
+    <string name="channel_description">Zkušební popis</string>
+
+    <!-- Dynamic string resources for Java code -->
+    <string name="can_connecting">Navazuji komunikaci s CAN sběrnicí...</string>
+    <string name="can_waiting">Čekám na CAN zprávy... (%1$dms)</string>
+    <string name="can_error">Chyba CAN: %1$s</string>
+    <string name="update_time_format">Čas aktualizace: %1$s</string>
+    <string name="update_time_demo_format">Čas aktualizace: %1$s (Demo)</string>
+    <string name="gear_park">P / Stání</string>
+    <string name="gear_drive">D (Vpřed)</string>
+    <string name="gear_reverse">R (Zpátečka)</string>
+    <string name="gear_neutral">N (Neutrál)</string>
+    <string name="gear_charging">Nabíjení</string>
+    <string name="consumption_stopped">--.- kWh/100km (Stojí)</string>
+    <string name="aux_bat_charging">%.1fV (Dobíjí)</string>
+    <string name="aux_bat_ok">%.1fV (OK)</string>
+    <string name="aux_bat_low">%.1fV (Nízké!)</string>
+    <string name="soh_test_cnetto_format">%.2f kWh (nominál 28.5 kWh)</string>
+    <string name="soh_test_samples_format">%1$02d:%2$02d:%3$02d (%4$d vzorků)</string>
+
+    <!-- Placeholders -->
+    <string name="dash_placeholder">---</string>
+    <string name="speed_unit_placeholder">--- km/h</string>
+    <string name="motor_rpm_placeholder">--- RPM</string>
+    <string name="gear_placeholder">---</string>
+    <string name="temp_placeholder" tools:ignore="TypographyDashes">--.-°C</string>
+    <string name="range_placeholder" tools:ignore="TypographyDashes">--- km</string>
+    <string name="range_estimate_placeholder" tools:ignore="TypographyDashes">--- km / --- km</string>
+    <string name="soc_placeholder" tools:ignore="TypographyDashes">--.-- %</string>
+    <string name="remaining_energy_placeholder" tools:ignore="TypographyDashes">--.- kWh</string>
+    <string name="kw_placeholder" tools:ignore="TypographyDashes">--- kW</string>
+    <string name="amp_placeholder" tools:ignore="TypographyDashes">--.-- A</string>
+    <string name="volt_placeholder" tools:ignore="TypographyDashes">---.- V</string>
+    <string name="ambient_temp_placeholder" tools:ignore="TypographyDashes">--.- °C</string>
+    <string name="aux_bat_placeholder" tools:ignore="TypographyDashes">--.- V</string>
+    <string name="odo_placeholder" tools:ignore="TypographyDashes">--- km</string>
+</resources>

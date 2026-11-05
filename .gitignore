@@ -1,0 +1,39 @@
+*.iml
+.gradle
+/local.properties
+local.properties
+.idea/
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+app/build
+/captures
+.externalNativeBuild
+.cxx
+
+# Logs, Diagnostics & Data exports
+*.log
+*.csv
+Honda_e_CAN_*.log
+
+# Build & Release artifacts
+*.apk
+*.aab
+output-metadata.json
+
+# Keystores & Signing
+*.jks
+*.keystore
+*.p12
+
+# OS / Editor temporary files
+.vscode/
+*.swp
+*.bak
+
+logo.svg
