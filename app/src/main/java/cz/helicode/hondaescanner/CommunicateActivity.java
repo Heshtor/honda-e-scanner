@@ -5,6 +5,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.BitmapFactory;
@@ -130,8 +131,6 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
             "ATRV"           // 12V auxiliary system voltage
     );
 
-    private static final String LOG_FILE_HEADER = "sysTimeMs,ODO,SoC (dash),SoC (min),SoC (max),SoH,Battemp,Ambienttemp,kW,Amp,Volt,AuxBat,Connection,Charging,Speed,Lat,Lon,InvTemp,MotorRpm,CellMinMv,CellMaxMv,CellDeltaMv";
-
     private TextView _connectionText, _vinText, _messageText;
     private TextView _rangeDashText, _rangeEstimateText;
     private TextView _socDashText, _socCellsText, _socDeltaText, _sohText;
@@ -203,7 +202,6 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
     private ChargingConnection _chargingConnection = ChargingConnection.NC;
     private boolean _isCharging = false;
 
-    private PrintWriter _logFileWriter;
     private long _sysTimeMs;
     private long _epoch, _lastEpochNotification;
 
@@ -263,6 +261,13 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         // Setup views
         initViews();
         selectTab(_selectedTabIndex);
+
+        SharedPreferences appPrefs = getSharedPreferences(ThemeHelper.PREF_NAME, Context.MODE_PRIVATE);
+        String savedVin = appPrefs.getString("vehicle_vin", null);
+        if (savedVin != null && !savedVin.isEmpty()) {
+            _vin = savedVin;
+            setText(_vinText, _vin);
+        }
 
         // Notification setup
         createNotificationChannel();
@@ -585,15 +590,18 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
                 }
             }
 
-            // If VIN wasn't returned, proceed if car responds
+            // If car responds
             if (!_carConnected) {
                 _carConnected = true;
-                _vin = "HONDA_E";
-                setText(_vinText, "Honda e (Advance)");
+                if (_vin == null || _vin.isEmpty() || _vin.equals("HONDA_E")) {
+                    _vin = "HONDA_E";
+                    setText(_vinText, "Honda e (Advance)");
+                } else {
+                    setText(_vinText, _vin);
+                }
             }
 
             Thread.sleep(WAIT_FOR_NEW_MESSAGE_TIMEOUT);
-            openNewFileForWriting();
             loop();
 
         } catch (InterruptedException e) {
@@ -651,9 +659,6 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
                         if (_lastEpochNotification + 10 < _epoch) {
                             updateNotification();
                         }
-
-                        // Write CSV log
-                        writeLineToLogFile();
                     } else {
                         setText(_messageText, String.format(getString(R.string.can_waiting), CAN_BUS_SCAN_INTERVAL));
                         Thread.sleep(CAN_BUS_SCAN_INTERVAL);
@@ -1296,6 +1301,13 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         } else if (message.length() >= 44) {
             _vin = hexToASCII(message.substring(10, 44));
         }
+        if (_vin != null && !_vin.isEmpty() && !_vin.equals("HONDA_E")) {
+            getSharedPreferences(ThemeHelper.PREF_NAME, Context.MODE_PRIVATE)
+                    .edit()
+                    .putString("vehicle_vin", _vin)
+                    .apply();
+            CanTrafficLogger.getInstance().updateVin(_vin);
+        }
     }
 
     private static String hexToASCII(String hexStr) {
@@ -1346,7 +1358,6 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
                     }
                     _viewModel.connect();
                 });
-                closeLogFile();
                 CanTrafficLogger.getInstance().stopLogging();
                 _retries = 0;
                 break;
@@ -1471,51 +1482,6 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         Toast.makeText(this, R.string.demo_stopped_toast, Toast.LENGTH_SHORT).show();
     }
 
-    private void openNewFileForWriting() {
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.US);
-            Date now = new Date();
-
-            File baseDir = getExternalFilesDir(null);
-            if (baseDir == null) {
-                baseDir = getFilesDir();
-            }
-
-            String safeVin = _vin.replaceAll("[^a-zA-Z0-9_-]", "_");
-            File logFile = new File(baseDir, safeVin + "-" + sdf.format(now) + ".csv");
-
-            if (!logFile.exists()) {
-                //noinspection ResultOfMethodCallIgnored
-                logFile.createNewFile();
-            }
-            _logFileWriter = new PrintWriter(logFile);
-            _logFileWriter.println(LOG_FILE_HEADER);
-            _logFileWriter.flush();
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to open new file for writing", e);
-        }
-    }
-
-    private void writeLineToLogFile() {
-        if (_logFileWriter != null) {
-            _logFileWriter.println(_sysTimeMs + "," + _odo + "," + _soc + ","
-                    + _socMin + "," + _socMax + "," + _soh + "," + _batTemp + ","
-                    + _ambientTemp + "," + _power + "," + _amp + "," + _volt + ","
-                    + _auxBat + "," + (_chargingConnection != null ? _chargingConnection.getName() : "NC") + "," + _isCharging
-                    + "," + _speed + "," + _lat + "," + _lon + "," + _invTemp + "," + _motorRpm
-                    + "," + _cellMinMv + "," + _cellMaxMv + "," + _cellDeltaMv);
-            _logFileWriter.flush();
-        }
-    }
-
-    private void closeLogFile() {
-        if (_logFileWriter != null) {
-            _logFileWriter.flush();
-            _logFileWriter.close();
-            _logFileWriter = null;
-        }
-    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
@@ -1540,7 +1506,6 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
             _wakeLock.release();
             _wakeLock = null;
         }
-        closeLogFile();
         CanTrafficLogger.getInstance().stopLogging();
         if (_locationManager != null) {
             _locationManager.removeUpdates(this);

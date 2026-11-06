@@ -57,21 +57,35 @@ public class CanTrafficLogger {
                 baseDir.mkdirs();
             }
 
-            String safeVin = (vin != null && !vin.isEmpty() ? vin : "HONDA_E").replaceAll("[^a-zA-Z0-9_-]", "_");
-            String fileName = "Honda_e_CAN_" + safeVin + "_" + _fileDateFormat.format(new Date()) + ".log";
-            _currentLogFile = new File(baseDir, fileName);
+            // Archive any unfinalized live log from previous session with its last modified time
+            File liveFile = new File(baseDir, "Honda_e_live.log");
+            if (liveFile.exists() && liveFile.length() > 0) {
+                Date prevDate = new Date(liveFile.lastModified());
+                File archived = new File(baseDir, "Honda_e_" + _fileDateFormat.format(prevDate) + ".log");
+                //noinspection ResultOfMethodCallIgnored
+                liveFile.renameTo(archived);
+            }
 
-            _writer = new PrintWriter(new FileWriter(_currentLogFile, true), true);
+            _currentLogFile = liveFile;
+            String safeVin = (vin != null && !vin.isEmpty() && !vin.equals("HONDA_E")) ? vin : "HONDA_E";
+
+            _writer = new PrintWriter(new FileWriter(_currentLogFile, false), true);
             _writer.println("================================================================================");
             _writer.println("Honda e Scanner - CAN & OBD Diagnostic Communication Log");
             _writer.println("Start date & time: " + _timeFormat.format(new Date()));
-            _writer.println("Vehicle: Honda e Advance (2021)");
+            _writer.println("Vehicle: Honda e Advance");
             _writer.println("VIN: " + safeVin);
             _writer.println("Legend: [TX] = query sent to adapter | [RX] = raw response from CAN bus");
             _writer.println("================================================================================");
             _writer.flush();
         } catch (Exception e) {
             Log.e(TAG, "Error starting CAN traffic logger", e);
+        }
+    }
+
+    public synchronized void updateVin(String vin) {
+        if (vin != null && !vin.isEmpty() && !vin.equals("HONDA_E")) {
+            logInfo("Vehicle VIN detected: " + vin);
         }
     }
 
@@ -95,12 +109,21 @@ public class CanTrafficLogger {
 
     public synchronized void stopLogging() {
         if (_writer != null) {
+            Date now = new Date();
             _writer.println("================================================================================");
-            _writer.println("Logging stopped: " + _timeFormat.format(new Date()));
+            _writer.println("Logging stopped: " + _timeFormat.format(now));
             _writer.println("================================================================================");
             _writer.flush();
             _writer.close();
             _writer = null;
+
+            if (_currentLogFile != null && _currentLogFile.exists()) {
+                File baseDir = _currentLogFile.getParentFile();
+                File finalizedFile = new File(baseDir, "Honda_e_" + _fileDateFormat.format(now) + ".log");
+                if (_currentLogFile.renameTo(finalizedFile)) {
+                    _currentLogFile = finalizedFile;
+                }
+            }
         }
     }
 
@@ -116,10 +139,23 @@ public class CanTrafficLogger {
         if (_currentLogFile == null || !_currentLogFile.exists()) {
             return null;
         }
+
+        File fileToShare = _currentLogFile;
+        Date now = new Date();
+        File baseDir = _currentLogFile.getParentFile();
+        File exportFile = new File(baseDir, "Honda_e_" + _fileDateFormat.format(now) + ".log");
+
+        try {
+            copyFile(_currentLogFile, exportFile);
+            fileToShare = exportFile;
+        } catch (IOException e) {
+            Log.e(TAG, "Error copying log for share", e);
+        }
+
         return FileProvider.getUriForFile(
                 context,
                 context.getPackageName() + ".fileprovider",
-                _currentLogFile
+                fileToShare
         );
     }
 
@@ -136,7 +172,7 @@ public class CanTrafficLogger {
             throw new IOException("No CAN log file recorded yet.");
         }
 
-        String exportName = _currentLogFile.getName();
+        String exportName = "Honda_e_" + _fileDateFormat.format(new Date()) + ".log";
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ContentValues values = new ContentValues();
@@ -177,6 +213,18 @@ public class CanTrafficLogger {
                 out.flush();
             }
             return targetFile.getAbsolutePath();
+        }
+    }
+
+    private void copyFile(File src, File dst) throws IOException {
+        try (InputStream in = new FileInputStream(src);
+             OutputStream out = new FileOutputStream(dst)) {
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                out.write(buffer, 0, read);
+            }
+            out.flush();
         }
     }
 }
