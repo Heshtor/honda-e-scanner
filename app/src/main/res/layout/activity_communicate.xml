@@ -239,6 +239,20 @@
                                 android:textStyle="bold" />
                         </LinearLayout>
 
+                        <!-- Button: View 96 Cell Voltages Dialog -->
+                        <Button
+                            android:id="@+id/btn_show_cells"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:minHeight="40dp"
+                            android:layout_marginTop="4dp"
+                            android:layout_marginBottom="12dp"
+                            android:backgroundTint="@color/colorHighlight"
+                            android:text="@string/btn_show_cells"
+                            android:textColor="@color/colorAccent"
+                            android:textSize="13sp"
+                            android:textAllCaps="false" />
+
                         <!-- Row 6: SoH -->
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -297,7 +311,6 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="8dp"
                             android:gravity="center_vertical"
                             android:orientation="horizontal">
 
@@ -316,32 +329,6 @@
                                 android:fontFamily="monospace"
                                 android:gravity="end"
                                 android:text="@string/range_placeholder"
-                                android:textColor="@color/colorText"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-
-                        <!-- Row 9: Estimated Range (Min / Max) -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:layout_marginEnd="8dp"
-                                android:text="@string/range_estimate_title"
-                                android:textColor="@color/colorTextSecondary" />
-
-                            <TextView
-                                android:id="@+id/communicate_range_estimate"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="monospace"
-                                android:gravity="end"
-                                android:text="@string/range_estimate_placeholder"
                                 android:textColor="@color/colorText"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -640,6 +627,20 @@
                                 android:textColor="@color/colorText"
                                 android:textStyle="bold" />
                         </LinearLayout>
+
+                        <!-- Button: View 6 Module Temperatures Dialog -->
+                        <Button
+                            android:id="@+id/btn_show_module_temps"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:minHeight="40dp"
+                            android:layout_marginTop="4dp"
+                            android:layout_marginBottom="12dp"
+                            android:backgroundTint="@color/colorHighlight"
+                            android:text="@string/btn_show_module_temps"
+                            android:textColor="@color/colorAccent"
+                            android:textSize="13sp"
+                            android:textAllCaps="false" />
 
                         <!-- Row: Inverter Temp (Hidden) -->
                         <LinearLayout
@@ -1086,6 +1087,60 @@
                                 android:fontFamily="monospace"
                                 android:gravity="end"
                                 android:text="0"
+                                android:textColor="@color/colorText"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <!-- Row: Live Net Energy -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="8dp"
+                                android:text="@string/soh_test_live_energy_title"
+                                android:textColor="@color/colorTextSecondary" />
+
+                            <TextView
+                                android:id="@+id/soh_test_live_energy"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="monospace"
+                                android:gravity="end"
+                                android:text="0.00 kWh"
+                                android:textColor="@color/colorText"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <!-- Row: Live Distance -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="8dp"
+                                android:text="@string/soh_test_live_distance_title"
+                                android:textColor="@color/colorTextSecondary" />
+
+                            <TextView
+                                android:id="@+id/soh_test_live_distance"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="monospace"
+                                android:gravity="end"
+                                android:text="0.0 km"
                                 android:textColor="@color/colorText"
                                 android:textStyle="bold" />
                         </LinearLayout>

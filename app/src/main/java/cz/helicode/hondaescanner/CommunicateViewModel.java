@@ -47,6 +47,7 @@ public class CommunicateViewModel extends AndroidViewModel {
     private final Object _newMessageParsed = new Object();
     private String _message = "";
     private String _messageID = "";
+    private int _expectedIsoTpBytes = -1;
     private boolean _retry = true;
 
     // Called by the system, this is just a constructor that matches AndroidViewModel.
@@ -159,6 +160,12 @@ public class CommunicateViewModel extends AndroidViewModel {
                         _newMessage = true;
                         _newMessageParsed.notifyAll();
                         return;
+                    } else if (pciType == '1' && content.length() >= 12) {
+                        try {
+                            _expectedIsoTpBytes = Integer.parseInt(content.substring(8, 12), 16) & 0x0FFF;
+                        } catch (Exception ignored) {
+                            _expectedIsoTpBytes = -1;
+                        }
                     }
                 } else {
                     _message = trySubstring(message, 11);
@@ -169,8 +176,10 @@ public class CommunicateViewModel extends AndroidViewModel {
                 _message += trySubstring(message, 10);
             }
 
-            // 3. Multi-frame end-of-message markers or padding detection
-            if (message.contains("555555") || message.contains("0000555555")
+            // 3. Multi-frame end-of-message markers, ISO-TP length satisfied, or padding detection
+            boolean lengthSatisfied = _expectedIsoTpBytes > 0 && (_message.length() >= (_expectedIsoTpBytes * 2));
+            if (lengthSatisfied
+                    || message.contains("5555")
                     || message.contains("OK") || message.contains("ELM327")
                     || message.matches(".*\\d+\\.\\dV.*")
                     || message.contains("NO DATA") || message.contains("CAN ERROR")) {
@@ -203,6 +212,7 @@ public class CommunicateViewModel extends AndroidViewModel {
             _newMessage = false;
             _message = "";
             _messageID = "";
+            _expectedIsoTpBytes = -1;
         }
         if (_deviceInterface != null && !TextUtils.isEmpty(message)) {
             CanTrafficLogger.getInstance().logTx(message.trim());

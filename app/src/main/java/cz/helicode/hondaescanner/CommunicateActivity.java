@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -22,6 +23,7 @@ import android.os.PowerManager;
 import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -29,12 +31,14 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.cardview.widget.CardView;
@@ -70,6 +74,8 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
     private static final String RANGE_DASH_ID = "62702A";
     private static final String SOH_ID = "622021";
     private static final String SOC_ID = "622029";
+    private static final String CELLS_V_ID = "622028";
+    private static final String BAT_MODULE_TEMPS_ID = "62202C";
     private static final String BATTEMP_ID = "62202A";
     private static final String MOTOR_RPM_ID = "622001";
 
@@ -124,7 +130,9 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
             "ATSHDA01F1",
             "ATFCSH18DA01F1",
             "ATCRA18DAF101",
-            "22202A",        // Traction battery temperature (°C) on ECU 01
+            "222028",        // 96 individual cell voltages (0.0002 V/bit)
+            "22202C",        // 6 battery module temperatures (°C)
+            "22202A",        // Traction battery telemetry / temperatures on ECU 01
             "222001",        // Motor RPM on ECU 01
 
             // --- 4. 12V AUXILIARY BATTERY ---
@@ -132,7 +140,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
     );
 
     private TextView _connectionText, _vinText, _messageText;
-    private TextView _rangeDashText, _rangeEstimateText;
+    private TextView _rangeDashText;
     private TextView _socDashText, _socCellsText, _socDeltaText, _sohText;
     private TextView _energyText, _cellVoltText, _cellDeltaText;
     private TextView _chargingText, _chargePowerText;
@@ -142,6 +150,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
     private TextView _latText, _lonText, _elevationText;
 
     private Button _connectButton, _demoButton, _shareLogButton;
+    private Button _btnShowCells, _btnShowModuleTemps;
     private boolean _isDemoMode = false;
 
     // Navigation Tabs
@@ -160,11 +169,12 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
     private TextView _sohTestStatusText;
     private Button _btnToggleSohTest;
     private CardView _cardSohTestLive, _cardSohTestResults;
-    private TextView _sohTestLiveTimeText, _sohTestLiveSamplesText, _sohTestLivePowerText;
+    private TextView _sohTestLiveTimeText, _sohTestLiveSamplesText, _sohTestLiveEnergyText, _sohTestLiveDistanceText, _sohTestLivePowerText;
     private TextView _sohTestResultSohText, _sohTestResultCnettoText, _sohTestResultDeltaSocText;
     private TextView _sohTestResultEnergyText, _sohTestResultDischargeRegenText, _sohTestResultDistanceText, _sohTestResultConsumptionText, _sohTestResultDurationText;
 
     private volatile boolean _isSohTestRunning = false;
+    private volatile boolean _isSohTestStopping = false;
     private boolean _isEcu15Configured = false;
     private long _sohTestStartSysTimeMs = 0;
     private long _sohTestLastElapsedRealtimeMs = 0;
@@ -175,6 +185,8 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
     private double _sohTestTotalNetEnergyKwh = 0.0;
     private double _sohTestTotalDischargeKwh = 0.0;
     private double _sohTestTotalRegenKwh = 0.0;
+    private double _sohTestGpsDistanceKm = 0.0;
+    private Location _sohTestLastGpsLocation;
     private int _sohTestSampleCount = 0;
     private int _sohTestCycleCounter = 0;
     private PowerManager.WakeLock _wakeLock = null;
@@ -191,8 +203,13 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
     private int _invTemp, _motorRpm, _speedFromCan;
     private byte _ambientTemp = -100;
 
-    // Cell voltage metrics
+    // Cell voltage metrics (real 96 cells from DID 0x2028)
+    private final double[] _cellVoltages = new double[96];
+    private double _cellMinV = 0.0, _cellMaxV = 0.0, _cellAvgV = 0.0;
     private int _cellMinMv, _cellMaxMv, _cellDeltaMv;
+
+    // Battery module temperature metrics (6 sensors from DID 0x202C)
+    private final double[] _moduleTemps = new double[6];
     private int _odo;
 
     private String _vin = "HONDA_E";
@@ -214,6 +231,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
     private NotificationCompat.Builder _notificationBuilder;
     private NotificationManagerCompat _notificationManagerCompat;
     private LocationManager _locationManager;
+    private Location _lastLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -414,7 +432,6 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
 
         // Battery & Range Card
         _rangeDashText = findViewById(R.id.communicate_range_dash);
-        _rangeEstimateText = findViewById(R.id.communicate_range_estimate);
         _socDashText = findViewById(R.id.communicate_soc_dash);
         _socCellsText = findViewById(R.id.communicate_soc_cells);
         _socDeltaText = findViewById(R.id.communicate_soc_delta);
@@ -422,6 +439,11 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         _energyText = findViewById(R.id.communicate_energy);
         _cellVoltText = findViewById(R.id.communicate_cell_volt);
         _cellDeltaText = findViewById(R.id.communicate_cell_delta);
+
+        _btnShowCells = findViewById(R.id.btn_show_cells);
+        if (_btnShowCells != null) {
+            _btnShowCells.setOnClickListener(v -> showAllCellsDialog());
+        }
 
         // Power & Charging Card
         _chargingText = findViewById(R.id.communicate_charging_connection);
@@ -438,6 +460,11 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         _ambientTempText = findViewById(R.id.communicate_ambient_temp);
         _invTempText = findViewById(R.id.communicate_inv_temp);
         _auxBatText = findViewById(R.id.communicate_aux_bat);
+
+        _btnShowModuleTemps = findViewById(R.id.btn_show_module_temps);
+        if (_btnShowModuleTemps != null) {
+            _btnShowModuleTemps.setOnClickListener(v -> showModuleTempsDialog());
+        }
 
         // Vehicle Info Card
         _odoText = findViewById(R.id.communicate_odo);
@@ -461,6 +488,8 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         _cardSohTestLive = findViewById(R.id.card_soh_test_live);
         _sohTestLiveTimeText = findViewById(R.id.soh_test_live_time);
         _sohTestLiveSamplesText = findViewById(R.id.soh_test_live_samples);
+        _sohTestLiveEnergyText = findViewById(R.id.soh_test_live_energy);
+        _sohTestLiveDistanceText = findViewById(R.id.soh_test_live_distance);
         _sohTestLivePowerText = findViewById(R.id.soh_test_live_power);
 
         // SoH Test Results Card
@@ -489,11 +518,6 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
     }
 
     private void selectTab(int tabIndex) {
-        if (tabIndex != 1 && _isSohTestRunning) {
-            Toast.makeText(this, R.string.soh_test_locked_toast, Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         _selectedTabIndex = tabIndex;
 
         if (_containerLiveData != null) _containerLiveData.setVisibility(tabIndex == 0 ? View.VISIBLE : View.GONE);
@@ -545,13 +569,48 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
 
     private void setupLocationUpdates() {
         try {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            boolean fineGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+            boolean coarseGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+
+            if (fineGranted || coarseGranted) {
                 _locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                 if (_locationManager != null) {
-                    _locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, this);
+                    boolean gpsEnabled = false;
+                    boolean networkEnabled = false;
+                    try {
+                        gpsEnabled = _locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+                    } catch (Exception ignored) {}
+                    try {
+                        networkEnabled = _locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+                    } catch (Exception ignored) {}
+
+                    if (fineGranted && gpsEnabled) {
+                        _locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0.5f, this);
+                    }
+                    if (networkEnabled) {
+                        _locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0.5f, this);
+                    }
+
+                    // Pre-seed location from last known location
+                    Location bestLoc = null;
+                    if (fineGranted && gpsEnabled) {
+                        try {
+                            bestLoc = _locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                        } catch (SecurityException ignored) {}
+                    }
+                    if (bestLoc == null && networkEnabled) {
+                        try {
+                            bestLoc = _locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                        } catch (SecurityException ignored) {}
+                    }
+                    if (bestLoc != null) {
+                        onLocationChanged(bestLoc);
+                    }
                 }
             } else {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 101);
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                        101);
             }
         } catch (Exception e) {
             Log.e(TAG, "Location setup error", e);
@@ -561,8 +620,17 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 101 && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            setupLocationUpdates();
+        if (requestCode == 101 && grantResults.length > 0) {
+            boolean granted = false;
+            for (int res : grantResults) {
+                if (res == PackageManager.PERMISSION_GRANTED) {
+                    granted = true;
+                    break;
+                }
+            }
+            if (granted) {
+                setupLocationUpdates();
+            }
         }
     }
 
@@ -630,18 +698,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
                     }
 
                     // Determine driving gear
-                    String gearStr;
-                    if (_chargingConnection != ChargingConnection.NC || _isCharging) {
-                        gearStr = getString(R.string.gear_charging);
-                    } else if (_motorRpm > 50 || _speed > 2) {
-                        gearStr = getString(R.string.gear_drive);
-                    } else if (_motorRpm < -50) {
-                        gearStr = getString(R.string.gear_reverse);
-                    } else if (_speed == 0 && Math.abs(_motorRpm) < 20) {
-                        gearStr = getString(R.string.gear_park);
-                    } else {
-                        gearStr = getString(R.string.gear_neutral);
-                    }
+                    String gearStr = determineGear();
 
                     // Update mobile UI elements
                     updateUI(gearStr);
@@ -704,7 +761,44 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         }
     }
 
+    private String determineGear() {
+        if (_chargingConnection != ChargingConnection.NC || _isCharging) {
+            return getString(R.string.gear_charging);
+        } else if (_motorRpm > 50 || _speed > 2.0) {
+            return getString(R.string.gear_drive);
+        } else if (_motorRpm < -50) {
+            return getString(R.string.gear_reverse);
+        } else if (_speed <= 1.0 && Math.abs(_motorRpm) < 20) {
+            return getString(R.string.gear_park);
+        } else {
+            return getString(R.string.gear_neutral);
+        }
+    }
+
+    private void queryOdoFromCan() throws InterruptedException {
+        sendCanCommand("ATSHDA60F1");
+        sendCanCommand("ATFCSH18DA60F1");
+        sendCanCommand("ATCRA18DAF160");
+        sendCanCommand("227022");
+        _isEcu15Configured = false;
+    }
+
     private void loopSohTest() throws InterruptedException {
+        if (_isSohTestStopping) {
+            try {
+                queryOdoFromCan();
+                // Also query latest SoC
+                sendCanCommand("ATSHDA15F1");
+                sendCanCommand("ATFCSH18DA15F1");
+                sendCanCommand("ATCRA18DAF115");
+                sendCanCommand("222029");
+            } catch (Exception ignored) {}
+            _sohTestStopOdo = _odo;
+            _sohTestStopSoc = _soc;
+            finishSohTestCalculations();
+            return;
+        }
+
         // Ensure ECU 15 header is set
         if (!_isEcu15Configured) {
             sendCanCommand("ATSHDA15F1");
@@ -745,8 +839,19 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
             sendCanCommand("222029");
         }
 
+        // 3. Periodically query Odometer on ECU 60 (~every 60 samples, roughly 25-30 seconds)
+        if (_sohTestCycleCounter % 60 == 0) {
+            try {
+                queryOdoFromCan();
+            } catch (Exception ignored) {}
+        }
+
         // Update live test UI
         updateSohTestLiveUI();
+
+        // Update overview UI too so dashboard remains responsive
+        String gearStr = determineGear();
+        updateUI(gearStr);
 
         // Notification update every 10s
         long epoch = System.currentTimeMillis() / 1000;
@@ -776,14 +881,21 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
 
         _sohTestStartSysTimeMs = System.currentTimeMillis();
         _sohTestLastElapsedRealtimeMs = 0;
+        if (_isDemoMode) {
+            if (_soc < 25.0) _soc = 76.50;
+            if (_odo <= 0) _odo = 15000;
+        }
         _sohTestStartSoc = _soc > 0 ? _soc : 76.5;
-        _sohTestStartOdo = _odo > 0 ? _odo : 15000;
+        _sohTestStartOdo = _odo > 0 ? _odo : 0;
+        _sohTestGpsDistanceKm = 0.0;
+        _sohTestLastGpsLocation = _lastLocation;
         _sohTestTotalNetEnergyKwh = 0.0;
         _sohTestTotalDischargeKwh = 0.0;
         _sohTestTotalRegenKwh = 0.0;
         _sohTestSampleCount = 0;
         _sohTestCycleCounter = 0;
         _isEcu15Configured = false;
+        _isSohTestStopping = false;
         _isSohTestRunning = true;
 
         CanTrafficLogger.getInstance().logInfo(String.format(Locale.ENGLISH,
@@ -791,14 +903,15 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
 
         runOnUiThread(() -> {
             if (_tabOverview != null) {
-                _tabOverview.setEnabled(false);
-                _tabOverview.setAlpha(0.4f);
+                _tabOverview.setEnabled(true);
+                _tabOverview.setAlpha(1.0f);
             }
             if (_tabSettings != null) {
-                _tabSettings.setEnabled(false);
-                _tabSettings.setAlpha(0.4f);
+                _tabSettings.setEnabled(true);
+                _tabSettings.setAlpha(1.0f);
             }
             if (_btnToggleSohTest != null) {
+                _btnToggleSohTest.setEnabled(true);
                 _btnToggleSohTest.setText(R.string.soh_test_btn_stop);
                 _btnToggleSohTest.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.colorWarning)));
             }
@@ -820,8 +933,6 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
     }
 
     private void stopSohTest() {
-        _isSohTestRunning = false;
-
         if (_demoSohHandler != null && _demoSohRunnable != null) {
             _demoSohHandler.removeCallbacks(_demoSohRunnable);
             _demoSohHandler = null;
@@ -832,30 +943,75 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
             _wakeLock.release();
         }
 
-        long durationMs = System.currentTimeMillis() - _sohTestStartSysTimeMs;
-
         if (_isDemoMode) {
-            // Realistic simulated test results: 92.5% SoH on 28.5 kWh net capacity
-            _sohTestStopSoc = Math.max(20.0, _sohTestStartSoc - 23.88);
-            double demoDeltaSoc = _sohTestStartSoc - _sohTestStopSoc;
-            double demoTargetNettoKwh = 26.36; // 92.5% SoH
-            _sohTestTotalNetEnergyKwh = Math.round(demoTargetNettoKwh * (demoDeltaSoc / 100.0) * 100.0) / 100.0;
-            _sohTestTotalRegenKwh = 0.85;
-            _sohTestTotalDischargeKwh = _sohTestTotalNetEnergyKwh + _sohTestTotalRegenKwh;
-            _sohTestStopOdo = _sohTestStartOdo + 41;
-            _sohTestSampleCount = 3850;
+            _isSohTestRunning = false;
+
+            // If the user stopped the demo test very quickly (< 0.15 kWh or < 0.8 km),
+            // ensure a minimal valid test progression so evaluation always succeeds cleanly
+            if (_sohTestTotalNetEnergyKwh < 0.15 || _sohTestGpsDistanceKm < 0.8) {
+                _sohTestSampleCount = Math.max(_sohTestSampleCount, 42);
+                _sohTestGpsDistanceKm = Math.max(_sohTestGpsDistanceKm, 1.8);
+                _sohTestTotalNetEnergyKwh = Math.max(_sohTestTotalNetEnergyKwh, 0.27);
+                _sohTestTotalRegenKwh = Math.max(_sohTestTotalRegenKwh, 0.03);
+                _sohTestTotalDischargeKwh = _sohTestTotalNetEnergyKwh + _sohTestTotalRegenKwh;
+            }
+
+            // Odometer advances by the simulated distance: 15000 + distance km
+            _sohTestStopOdo = _sohTestStartOdo + Math.max(1, (int) Math.round(_sohTestGpsDistanceKm));
+            _odo = _sohTestStopOdo;
+
+            // Target net capacity for realistic Honda e battery health: 26.39 kWh (92.60% SoH on 28.5 kWh nominal)
+            double targetNetCapacity = 26.39;
+            double calculatedDeltaSoc = (_sohTestTotalNetEnergyKwh / targetNetCapacity) * 100.0;
+            calculatedDeltaSoc = Math.max(0.60, Math.round(calculatedDeltaSoc * 100.0) / 100.0);
+            _sohTestStopSoc = Math.round((_sohTestStartSoc - calculatedDeltaSoc) * 100.0) / 100.0;
+            _soc = _sohTestStopSoc;
+
+            finishSohTestCalculations();
+        } else if (_loopRunning && _carConnected) {
+            // Signal background loop to query fresh CAN ODO & SoC, then finish calculations
+            _isSohTestStopping = true;
+            runOnUiThread(() -> {
+                if (_btnToggleSohTest != null) {
+                    _btnToggleSohTest.setEnabled(false);
+                }
+                if (_sohTestStatusText != null) {
+                    _sohTestStatusText.setText(R.string.soh_test_status_finalizing);
+                }
+            });
         } else {
+            // Not connected or loop stopped
             _sohTestStopSoc = _soc;
             _sohTestStopOdo = _odo;
+            finishSohTestCalculations();
         }
+    }
 
+    private void finishSohTestCalculations() {
+        _isSohTestRunning = false;
+        _isSohTestStopping = false;
+
+        long rawDurationMs = System.currentTimeMillis() - _sohTestStartSysTimeMs;
+        if (_isDemoMode && _sohTestSampleCount >= 40 && rawDurationMs < 15000L) {
+            rawDurationMs = _sohTestSampleCount * 400L;
+        }
+        final long durationMs = rawDurationMs;
         double deltaSocPct = _sohTestStartSoc - _sohTestStopSoc;
-        int deltaKm = _sohTestStopOdo - _sohTestStartOdo;
+        int deltaKmCan = (_sohTestStopOdo > 0 && _sohTestStartOdo > 0 && _sohTestStopOdo >= _sohTestStartOdo)
+                ? (_sohTestStopOdo - _sohTestStartOdo) : 0;
         double netEnergyKwh = _sohTestTotalNetEnergyKwh;
 
+        double calculatedDist = deltaKmCan;
+        if (_sohTestGpsDistanceKm >= 0.2) {
+            calculatedDist = _sohTestGpsDistanceKm;
+        } else if (calculatedDist <= 0 && _sohTestGpsDistanceKm > 0.05) {
+            calculatedDist = _sohTestGpsDistanceKm;
+        }
+        final double effectiveDistKm = calculatedDist;
+
         CanTrafficLogger.getInstance().logInfo(String.format(Locale.ENGLISH,
-                "[SOH_TEST_STOPPED] StopSoC=%.2f%%, StopOdo=%dkm, ΔSoC=%.2f%%, Δkm=%dkm, netKwh=%.4f, samples=%d",
-                _sohTestStopSoc, _sohTestStopOdo, deltaSocPct, deltaKm, netEnergyKwh, _sohTestSampleCount));
+                "[SOH_TEST_STOPPED] StopSoC=%.2f%%, StopOdo=%dkm, ΔSoC=%.2f%%, ΔkmCan=%dkm, gpsKm=%.2f, netKwh=%.4f, samples=%d",
+                _sohTestStopSoc, _sohTestStopOdo, deltaSocPct, deltaKmCan, _sohTestGpsDistanceKm, netEnergyKwh, _sohTestSampleCount));
 
         runOnUiThread(() -> {
             if (_tabOverview != null) {
@@ -867,6 +1023,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
                 _tabSettings.setAlpha(1.0f);
             }
             if (_btnToggleSohTest != null) {
+                _btnToggleSohTest.setEnabled(true);
                 _btnToggleSohTest.setText(R.string.soh_test_btn_start);
                 _btnToggleSohTest.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.colorAccent)));
             }
@@ -878,7 +1035,6 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
                 double deltaSocRatio = deltaSocPct / 100.0;
                 double cNettoKwh = netEnergyKwh / deltaSocRatio;
                 double calculatedSohPct = (cNettoKwh / HONDA_E_NET_CAPACITY_KWH) * 100.0;
-                double avgConsumptionKwh100km = deltaKm > 0 ? (netEnergyKwh / deltaKm) * 100.0 : 0.0;
 
                 if (_cardSohTestResults != null) {
                     _cardSohTestResults.setVisibility(View.VISIBLE);
@@ -891,8 +1047,27 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
                 setText(_sohTestResultEnergyText, String.format(Locale.ENGLISH, "%.2f kWh", netEnergyKwh));
                 setText(_sohTestResultDischargeRegenText, String.format(Locale.ENGLISH, "+%.2f kWh / -%.2f kWh",
                         _sohTestTotalDischargeKwh, _sohTestTotalRegenKwh));
-                setText(_sohTestResultDistanceText, deltaKm > 0 ? String.format(Locale.ENGLISH, "%d km (%d → %d km)", deltaKm, _sohTestStartOdo, _sohTestStopOdo) : "--- km");
-                setText(_sohTestResultConsumptionText, deltaKm > 0 ? String.format(Locale.ENGLISH, "%.2f kWh/100 km", avgConsumptionKwh100km) : "--- kWh/100km");
+
+                if (deltaKmCan > 0) {
+                    if (_sohTestGpsDistanceKm >= 0.2) {
+                        setText(_sohTestResultDistanceText, String.format(Locale.ENGLISH, "%.1f km (%d → %d km)",
+                                _sohTestGpsDistanceKm, _sohTestStartOdo, _sohTestStopOdo));
+                    } else {
+                        setText(_sohTestResultDistanceText, String.format(Locale.ENGLISH, "%d km (%d → %d km)",
+                                deltaKmCan, _sohTestStartOdo, _sohTestStopOdo));
+                    }
+                } else if (_sohTestGpsDistanceKm >= 0.1) {
+                    setText(_sohTestResultDistanceText, String.format(Locale.ENGLISH, "%.1f km (GPS)", _sohTestGpsDistanceKm));
+                } else {
+                    setText(_sohTestResultDistanceText, "--- km");
+                }
+
+                if (effectiveDistKm > 0.05) {
+                    double avgConsumptionKwh100km = (netEnergyKwh / effectiveDistKm) * 100.0;
+                    setText(_sohTestResultConsumptionText, String.format(Locale.ENGLISH, "%.2f kWh/100 km", avgConsumptionKwh100km));
+                } else {
+                    setText(_sohTestResultConsumptionText, "--- kWh/100km");
+                }
 
                 long hours = (durationMs / (1000 * 60 * 60));
                 long minutes = (durationMs / (1000 * 60)) % 60;
@@ -911,19 +1086,39 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
             public void run() {
                 if (!_isSohTestRunning) return;
 
-                _volt = 362.5 + (Math.random() * 5.0);
-                _amp = 30.0 + (Math.random() * 6.0);
+                double currentAmp;
+                if ((_sohTestSampleCount % 20) >= 16) {
+                    // Periodic regenerative braking phase (green power, -16 to -25 kW)
+                    currentAmp = -(45.0 + Math.random() * 25.0);
+                } else {
+                    // Acceleration / cruising phase (normal power color, +41 to +55 kW)
+                    currentAmp = 115.0 + (Math.random() * 35.0);
+                }
+                _volt = 360.0 + (Math.random() * 6.0);
+                _amp = currentAmp;
                 _power = Math.round((_volt * _amp / 1000.0) * 100.0) / 100.0;
 
                 double dtSeconds = 0.4;
                 double deltaKwh = (_power * 1000.0 * dtSeconds) / 3600000.0;
                 _sohTestTotalNetEnergyKwh += deltaKwh;
-                _sohTestTotalDischargeKwh += deltaKwh;
+                if (deltaKwh > 0) {
+                    _sohTestTotalDischargeKwh += deltaKwh;
+                } else {
+                    _sohTestTotalRegenKwh += Math.abs(deltaKwh);
+                }
                 _sohTestSampleCount++;
 
-                if (_sohTestSampleCount % 20 == 0) {
-                    _soc = Math.max(10.0, _soc - 0.05);
-                }
+                // Faster, responsive demo distance progression (~0.035 km per 400ms tick)
+                _sohTestGpsDistanceKm += 0.035;
+
+                // Sync simulated vehicle telemetry during test
+                _odo = _sohTestStartOdo + (int) Math.round(_sohTestGpsDistanceKm);
+                _speed = 125.0 + (Math.random() * 12.0);
+                _motorRpm = (int) Math.round(_speed * 68.8);
+
+                // Smoothly update SoC in lockstep with net energy consumed (~26.39 kWh net capacity = 92.60% SoH)
+                double deltaSocPct = (_sohTestTotalNetEnergyKwh / 26.39) * 100.0;
+                _soc = Math.max(10.0, Math.round((_sohTestStartSoc - deltaSocPct) * 100.0) / 100.0);
 
                 updateSohTestLiveUI();
                 _demoSohHandler.postDelayed(this, 400);
@@ -941,11 +1136,33 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
 
             setText(_sohTestLiveTimeText, String.format(Locale.ENGLISH, "%02d:%02d:%02d", hours, minutes, seconds));
             setText(_sohTestLiveSamplesText, String.format(Locale.ENGLISH, "%,d", _sohTestSampleCount));
+            if (_sohTestLiveEnergyText != null) {
+                setText(_sohTestLiveEnergyText, String.format(Locale.ENGLISH, "%.2f kWh (+%.2f / -%.2f)",
+                        _sohTestTotalNetEnergyKwh, _sohTestTotalDischargeKwh, _sohTestTotalRegenKwh));
+            }
+
+            int canDeltaKm = (_odo > 0 && _sohTestStartOdo > 0 && _odo >= _sohTestStartOdo) ? (_odo - _sohTestStartOdo) : 0;
+            if (_sohTestLiveDistanceText != null) {
+                if (_sohTestGpsDistanceKm > 0.1) {
+                    setText(_sohTestLiveDistanceText, String.format(Locale.ENGLISH, "%.1f km%s",
+                            _sohTestGpsDistanceKm, canDeltaKm > 0 ? " (ODO: +" + canDeltaKm + " km)" : ""));
+                } else if (canDeltaKm > 0) {
+                    setText(_sohTestLiveDistanceText, canDeltaKm + " km");
+                } else {
+                    setText(_sohTestLiveDistanceText, "0.0 km");
+                }
+            }
 
             if (_volt > 0) {
                 setText(_sohTestLivePowerText, String.format(Locale.ENGLISH, "%+.2f kW (%.1f A, %.1f V)", _power, _amp, _volt));
+                if (_power < -0.05 || _isCharging) {
+                    _sohTestLivePowerText.setTextColor(ContextCompat.getColor(this, R.color.colorRegen));
+                } else {
+                    _sohTestLivePowerText.setTextColor(ContextCompat.getColor(this, R.color.colorText));
+                }
             } else {
                 setText(_sohTestLivePowerText, getString(R.string.dash_placeholder));
+                _sohTestLivePowerText.setTextColor(ContextCompat.getColor(this, R.color.colorText));
             }
         });
     }
@@ -966,8 +1183,11 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
             setText(_socDeltaText, getString(R.string.dash_placeholder));
         }
 
-        // Cell Voltages: Pack voltage / 96 cells with delta derived from cell SoC imbalance
-        if (_volt > 0) {
+        // Cell Voltages: real 96-cell readings from DID 0x2028 (with fallback to pack V / 96 if not yet received)
+        if (_cellMinV > 0.0 && _cellMaxV > 0.0) {
+            setText(_cellVoltText, String.format(Locale.ENGLISH, "%.3f V / %.3f V", _cellMinV, _cellMaxV));
+            setText(_cellDeltaText, String.format(Locale.ENGLISH, "%d mV", _cellDeltaMv));
+        } else if (_volt > 0) {
             double avgCellV = _volt / 96.0;
             if (_socDelta > 0) {
                 _cellDeltaMv = (int) Math.round(_socDelta * 6.5);
@@ -1007,16 +1227,6 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
             setText(_rangeDashText, getString(R.string.range_placeholder));
         }
 
-        // Theoretical range by consumption based on usable battery energy (19 / 13 kWh/100km)
-        int estRangeMin = _usableEnergyKwh > 0 ? (int) Math.round(_usableEnergyKwh / 0.190) : 0;
-        int estRangeMax = _usableEnergyKwh > 0 ? (int) Math.round(_usableEnergyKwh / 0.130) : 0;
-
-        if (estRangeMin > 0 && estRangeMax > 0) {
-            setText(_rangeEstimateText, String.format(Locale.ENGLISH, "%d – %d km (19 / 13 kWh)", estRangeMin, estRangeMax));
-        } else {
-            setText(_rangeEstimateText, getString(R.string.dash_placeholder));
-        }
-
         // 2. Power & Charging Card
         if (_isCharging) {
             int chargingRes = _chargingConnection == ChargingConnection.DC ? R.string.charging_dc : R.string.charging_ac;
@@ -1027,11 +1237,10 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
             runOnUiThread(() -> _chargingText.setTextColor(ContextCompat.getColor(this, R.color.colorTextSecondary)));
         }
 
-        // Charging input power (kW into battery and km/h rate)
+        // Charging input power (kW into battery)
         if (_isCharging || (_power < -0.1 && (_chargingConnection != ChargingConnection.NC || _isDemoMode))) {
             double chargeKw = Math.abs(_power);
-            int chargeKmH = (int) Math.round(chargeKw / 0.155);
-            setText(_chargePowerText, String.format(Locale.ENGLISH, "+%.1f kW (+%d km/h)", chargeKw, chargeKmH));
+            setText(_chargePowerText, String.format(Locale.ENGLISH, "+%.2f kW", chargeKw));
             runOnUiThread(() -> _chargePowerText.setTextColor(ContextCompat.getColor(this, R.color.colorCharging)));
         } else {
             setText(_chargePowerText, getString(R.string.dash_placeholder));
@@ -1047,7 +1256,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
 
         // Instantaneous consumption (kWh / 100 km)
         double currentSpeed = _speedFromCan > 0 ? _speedFromCan : _speed;
-        if (currentSpeed > 3.0) {
+        if (currentSpeed > 2.0) {
             _instantConsumption = (_power / currentSpeed) * 100.0;
             if (_instantConsumption < -0.1) {
                 setText(_consumptionText, String.format(Locale.ENGLISH, getString(R.string.consumption_regen_format), _instantConsumption));
@@ -1074,12 +1283,10 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
             setText(_voltText, getString(R.string.volt_placeholder));
         }
 
-        // Colorize power: green for regen/charging, orange/red for high consumption
+        // Colorize power: green for regen/charging (negative value), normal text color for discharge (positive value)
         runOnUiThread(() -> {
-            if (_power < -0.1 || _isCharging) {
+            if (_power < -0.05 || _isCharging) {
                 _kwText.setTextColor(ContextCompat.getColor(this, R.color.colorRegen));
-            } else if (_power > 30.0) {
-                _kwText.setTextColor(ContextCompat.getColor(this, R.color.colorDischarge));
             } else {
                 _kwText.setTextColor(ContextCompat.getColor(this, R.color.colorText));
             }
@@ -1133,9 +1340,21 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
             setText(_odoText, getString(R.string.odo_placeholder));
         }
         if (_carConnected || _isDemoMode) {
-            setText(_motorRpmText, _motorRpm + " RPM");
             double displaySpeed = _speedFromCan > 0 ? _speedFromCan : _speed;
-            setText(_speedText, String.format(Locale.ENGLISH, "%.0f km/h", displaySpeed));
+            if (displaySpeed > 1.0) {
+                setText(_speedText, String.format(Locale.ENGLISH, "%.0f km/h", displaySpeed));
+            } else {
+                setText(_speedText, "0 km/h");
+            }
+
+            if (_motorRpm != 0) {
+                setText(_motorRpmText, Math.abs(_motorRpm) + " RPM");
+            } else if (displaySpeed > 1.0) {
+                int derivedRpm = (int) Math.round(displaySpeed * 68.8);
+                setText(_motorRpmText, derivedRpm + " RPM");
+            } else {
+                setText(_motorRpmText, "0 RPM");
+            }
         } else {
             setText(_motorRpmText, getString(R.string.motor_rpm_placeholder));
             setText(_speedText, getString(R.string.speed_unit_placeholder));
@@ -1229,22 +1448,90 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
                 _newMessagesCount++;
             }
         }
-        // 4. Battery Temperatures (DID 0x202A on ECU 01)
+        // 4. Battery Individual Cell Voltages (DID 0x2028 on ECU 01) - 96 cells
+        else if (message.contains(CELLS_V_ID) || messageID.contains(CELLS_V_ID)) {
+            int idx = message.indexOf(CELLS_V_ID);
+            int start = idx + 60; // 30 bytes (60 hex chars) header offset before Cell 1
+            if (idx >= 0 && message.length() >= start + (96 * 4)) {
+                double minV = 999.0;
+                double maxV = 0.0;
+                double sumV = 0.0;
+                for (int i = 0; i < 96; i++) {
+                    int offset = start + (i * 4);
+                    try {
+                        int rawWord = Integer.parseInt(message.substring(offset, offset + 4), 16);
+                        double cellV = rawWord * 0.0002;
+                        _cellVoltages[i] = cellV;
+                        if (cellV > 0.5 && cellV < 5.0) {
+                            if (cellV < minV) minV = cellV;
+                            if (cellV > maxV) maxV = cellV;
+                            sumV += cellV;
+                        }
+                    } catch (Exception ignored) {
+                    }
+                }
+                if (minV < 100.0 && maxV > 0.0) {
+                    _cellMinV = minV;
+                    _cellMaxV = maxV;
+                    _cellAvgV = sumV / 96.0;
+                    _cellMinMv = (int) Math.round(_cellMinV * 1000.0);
+                    _cellMaxMv = (int) Math.round(_cellMaxV * 1000.0);
+                    _cellDeltaMv = (int) Math.round((_cellMaxV - _cellMinV) * 1000.0);
+                    _newMessagesCount++;
+                }
+            }
+        }
+        // 5. Battery Module Temperatures (DID 0x202C on ECU 01) - 6 module sensors
+        else if (message.contains(BAT_MODULE_TEMPS_ID) || messageID.contains(BAT_MODULE_TEMPS_ID)) {
+            int idx = message.indexOf(BAT_MODULE_TEMPS_ID);
+            int start = idx + 124; // 62 bytes (124 hex chars) header offset
+            if (idx >= 0 && message.length() >= start + (6 * 4)) {
+                double minT = 999.0;
+                double maxT = -999.0;
+                double sumT = 0.0;
+                int validCount = 0;
+                for (int i = 0; i < 6; i++) {
+                    int offset = start + (i * 4);
+                    try {
+                        short rawVal = (short) Integer.parseInt(message.substring(offset, offset + 4), 16);
+                        double t = rawVal / 10.0;
+                        _moduleTemps[i] = t;
+                        if (t > -40.0 && t < 100.0) {
+                            if (t < minT) minT = t;
+                            if (t > maxT) maxT = t;
+                            sumT += t;
+                            validCount++;
+                        }
+                    } catch (Exception ignored) {
+                    }
+                }
+                if (validCount > 0) {
+                    _batTempMin = minT;
+                    _batTempMax = maxT;
+                    _batTemp = Math.round((sumT / validCount) * 10.0) / 10.0;
+                    _batTempSpread = Math.round((_batTempMax - _batTempMin) * 10.0) / 10.0;
+                    _newMessagesCount++;
+                }
+            }
+        }
+        // 6. Battery Pack Telemetry / Temperatures fallback (DID 0x202A on ECU 01)
         else if (message.contains(BATTEMP_ID) || messageID.contains(BATTEMP_ID)) {
-            if (message.length() >= 418) {
-                double t1 = Integer.valueOf(message.substring(410, 414), 16).shortValue() / 10.0;
-                double t2 = Integer.valueOf(message.substring(414, 418), 16).shortValue() / 10.0;
-                _batTempMax = Math.max(t1, t2);
-                _batTempMin = Math.min(t1, t2);
-                _batTemp = Math.round(((_batTempMin + _batTempMax) / 2.0) * 10.0) / 10.0;
-                _batTempSpread = Math.round((_batTempMax - _batTempMin) * 10.0) / 10.0;
-                _newMessagesCount++;
-            } else if (message.length() >= 414) {
-                _batTemp = Integer.valueOf(message.substring(410, 414), 16).shortValue() / 10.0;
-                _batTempMax = _batTemp;
-                _batTempMin = _batTemp;
-                _batTempSpread = 0.0;
-                _newMessagesCount++;
+            if (_batTempMin <= -50.0) {
+                if (message.length() >= 418) {
+                    double t1 = Integer.valueOf(message.substring(410, 414), 16).shortValue() / 10.0;
+                    double t2 = Integer.valueOf(message.substring(414, 418), 16).shortValue() / 10.0;
+                    _batTempMax = Math.max(t1, t2);
+                    _batTempMin = Math.min(t1, t2);
+                    _batTemp = Math.round(((_batTempMin + _batTempMax) / 2.0) * 10.0) / 10.0;
+                    _batTempSpread = Math.round((_batTempMax - _batTempMin) * 10.0) / 10.0;
+                    _newMessagesCount++;
+                } else if (message.length() >= 414) {
+                    _batTemp = Integer.valueOf(message.substring(410, 414), 16).shortValue() / 10.0;
+                    _batTempMax = _batTemp;
+                    _batTempMin = _batTemp;
+                    _batTempSpread = 0.0;
+                    _newMessagesCount++;
+                }
             }
         }
         // 5. Electric Motor RPM (DID 0x2001 on ECU 01)
@@ -1286,6 +1573,92 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
                 _auxBat = Double.parseDouble(matcher.group(1));
             } catch (NumberFormatException ignored) {}
         }
+    }
+
+    private void showAllCellsDialog() {
+        if (_cellVoltages[0] <= 0.0 && _cellMinV <= 0.0) {
+            Toast.makeText(this, R.string.cells_no_data, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format(Locale.ENGLISH, "%-14s %.3f V\n", getString(R.string.dialog_label_min), _cellMinV));
+        sb.append(String.format(Locale.ENGLISH, "%-14s %.3f V\n", getString(R.string.dialog_label_avg), _cellAvgV));
+        sb.append(String.format(Locale.ENGLISH, "%-14s %.3f V\n", getString(R.string.dialog_label_max), _cellMaxV));
+        sb.append(String.format(Locale.ENGLISH, "%-14s %d mV\n", getString(R.string.dialog_label_delta), _cellDeltaMv));
+        sb.append("────────────────────────────\n\n");
+
+        for (int i = 0; i < 96; i += 2) {
+            String cell1 = String.format(Locale.ENGLISH, "#%02d: %.3f V", i + 1, _cellVoltages[i]);
+            String cell2 = (i + 1 < 96) ? String.format(Locale.ENGLISH, "#%02d: %.3f V", i + 2, _cellVoltages[i + 1]) : "";
+            sb.append(String.format(Locale.ENGLISH, "%-15s   %-15s\n", cell1, cell2));
+        }
+
+        TextView tv = new TextView(this);
+        tv.setText(sb.toString());
+        tv.setTypeface(Typeface.MONOSPACE);
+        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+        int pad = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
+        tv.setPadding(pad, pad, pad, pad);
+        tv.setTextColor(ContextCompat.getColor(this, R.color.colorText));
+
+        ScrollView sv = new ScrollView(this);
+        sv.addView(tv);
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.cell_voltages_dialog_title)
+                .setView(sv)
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
+    }
+
+    private void showModuleTempsDialog() {
+        boolean hasData = false;
+        for (double t : _moduleTemps) {
+            if (t > -40.0 && t < 100.0 && t != 0.0) {
+                hasData = true;
+                break;
+            }
+        }
+        if (!hasData && _batTempMin <= -50.0) {
+            Toast.makeText(this, R.string.module_temps_no_data, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format(Locale.ENGLISH, "%-14s %.1f °C\n", getString(R.string.dialog_label_min), _batTempMin));
+        sb.append(String.format(Locale.ENGLISH, "%-14s %.1f °C\n", getString(R.string.dialog_label_avg), _batTemp));
+        sb.append(String.format(Locale.ENGLISH, "%-14s %.1f °C\n", getString(R.string.dialog_label_max), _batTempMax));
+        sb.append(String.format(Locale.ENGLISH, "%-14s %.1f °C\n", getString(R.string.dialog_label_delta), _batTempSpread));
+        sb.append("──────────────────────────\n\n");
+
+        for (int i = 0; i < 6; i++) {
+            double temp = _moduleTemps[i];
+            String marker = "";
+            if (Math.abs(temp - _batTempMin) < 0.05 && _batTempSpread > 0.1) {
+                marker = "  (Min)";
+            } else if (Math.abs(temp - _batTempMax) < 0.05 && _batTempSpread > 0.1) {
+                marker = "  (Max)";
+            }
+            sb.append(String.format(Locale.ENGLISH, getString(R.string.dialog_module_format), i + 1, temp, marker));
+        }
+
+        TextView tv = new TextView(this);
+        tv.setText(sb.toString());
+        tv.setTypeface(Typeface.MONOSPACE);
+        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+        int pad = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
+        tv.setPadding(pad, pad, pad, pad);
+        tv.setTextColor(ContextCompat.getColor(this, R.color.colorText));
+
+        ScrollView sv = new ScrollView(this);
+        sv.addView(tv);
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.module_temps_dialog_title)
+                .setView(sv)
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
     }
 
     private void setText(final TextView text, final String value) {
@@ -1406,11 +1779,25 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         _cellMinMv = 3834;
         _cellMaxMv = 3840;
         _cellDeltaMv = 6;
+        _cellMinV = 3.834;
+        _cellMaxV = 3.840;
+        _cellAvgV = 3.837;
+        for (int i = 0; i < 96; i++) {
+            _cellVoltages[i] = 3.834 + (Math.random() * 0.006);
+        }
+        _cellVoltages[0] = 3.834;
+        _cellVoltages[95] = 3.840;
 
         _batTempMin = 19.8;
         _batTempMax = 20.6;
         _batTemp = 20.2;
         _batTempSpread = 0.8;
+        _moduleTemps[0] = 20.2;
+        _moduleTemps[1] = 19.8;
+        _moduleTemps[2] = 20.6;
+        _moduleTemps[3] = 20.1;
+        _moduleTemps[4] = 20.4;
+        _moduleTemps[5] = 19.9;
         _ambientTemp = 21;
         _auxBat = 14.3;
 
@@ -1454,6 +1841,11 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         _cellMinMv = 0;
         _cellMaxMv = 0;
         _cellDeltaMv = 0;
+        _cellMinV = 0.0;
+        _cellMaxV = 0.0;
+        _cellAvgV = 0.0;
+        Arrays.fill(_cellVoltages, 0.0);
+        Arrays.fill(_moduleTemps, 0.0);
         _batTemp = -100.0;
         _batTempMin = -100.0;
         _batTempMax = -100.0;
@@ -1515,10 +1907,60 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
 
     @Override
     public void onLocationChanged(@NonNull Location location) {
-        _speed = Math.round(location.getSpeed() * 36) / 10.0;
         _lat = String.valueOf(location.getLatitude());
         _lon = String.valueOf(location.getLongitude());
-        _elevation = Math.round(location.getAltitude() * 10.0) / 10.0;
+        if (location.hasAltitude()) {
+            _elevation = Math.round(location.getAltitude() * 10.0) / 10.0;
+        }
+
+        double speedKmh = 0.0;
+        if (location.hasSpeed()) {
+            speedKmh = location.getSpeed() * 3.6;
+        } else if (_lastLocation != null) {
+            long dtMs = location.getTime() - _lastLocation.getTime();
+            if (dtMs > 400 && dtMs < 10000) {
+                float distMeters = _lastLocation.distanceTo(location);
+                speedKmh = (distMeters / (dtMs / 1000.0)) * 3.6;
+            }
+        }
+        _lastLocation = location;
+        if (speedKmh >= 0.0 && speedKmh < 220.0) {
+            _speed = Math.round(speedKmh * 10.0) / 10.0;
+        }
+
+        // Live distance accumulation during SoH test
+        if (_isSohTestRunning) {
+            if (_sohTestLastGpsLocation != null) {
+                float d = _sohTestLastGpsLocation.distanceTo(location);
+                if (d > 1.0f && d < 600.0f && location.getAccuracy() < 60.0f) {
+                    _sohTestGpsDistanceKm += (d / 1000.0);
+                }
+            }
+            _sohTestLastGpsLocation = location;
+        }
+
+        // Fast live UI update for speed and instant consumption when driving
+        if (_speed > 1.0) {
+            runOnUiThread(() -> {
+                if (_speedText != null) {
+                    _speedText.setText(String.format(Locale.ENGLISH, "%.0f km/h", _speed));
+                }
+                if (_motorRpm == 0 && _motorRpmText != null) {
+                    int derivedRpm = (int) Math.round(_speed * 68.8);
+                    _motorRpmText.setText(derivedRpm + " RPM");
+                }
+                if (_power != 0.0 && _consumptionText != null) {
+                    _instantConsumption = (_power / _speed) * 100.0;
+                    if (_instantConsumption < -0.1) {
+                        _consumptionText.setText(String.format(Locale.ENGLISH, getString(R.string.consumption_regen_format), _instantConsumption));
+                        _consumptionText.setTextColor(ContextCompat.getColor(this, R.color.colorRegen));
+                    } else {
+                        _consumptionText.setText(String.format(Locale.ENGLISH, "%+.1f kWh/100km", _instantConsumption));
+                        _consumptionText.setTextColor(ContextCompat.getColor(this, R.color.colorText));
+                    }
+                }
+            });
+        }
     }
 
     enum ChargingConnection {

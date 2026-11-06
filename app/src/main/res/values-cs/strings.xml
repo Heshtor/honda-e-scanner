@@ -48,7 +48,6 @@
     <string name="soh">Zdraví baterie (SoH)</string>
     <string name="remaining_energy">Využitelná čistá energie</string>
     <string name="range_dash_title">Dojezd (palubní displej)</string>
-    <string name="range_estimate_title">Dojezd dle spotřeby (min / max)</string>
 
     <!-- Card 2: Power & Charging -->
     <string name="power_and_charging">Výkon a nabíjení</string>
@@ -93,8 +92,11 @@
     <string name="soh_test_live_title">Průběh aktuálního měření</string>
     <string name="soh_test_elapsed_time_title">Uplynulý čas</string>
     <string name="soh_test_samples_title">Počet vzorků</string>
-    <string name="soh_test_power_title">Okamžitý výkon / proud</string>
+    <string name="soh_test_live_energy_title">Čistá spotřebovaná energie</string>
+    <string name="soh_test_live_distance_title">Ujetá vzdálenost</string>
+    <string name="soh_test_power_title">Okamžitý výkon</string>
     <string name="soh_test_discharge_regen_title">Vybito / Rekuperováno</string>
+    <string name="soh_test_status_finalizing">Vyhodnocuji a dokončuji test…</string>
 
     <!-- SoH Test Results -->
     <string name="soh_test_result_title">Výsledky testu kapacity baterie</string>
@@ -155,7 +157,6 @@
     <string name="gear_placeholder">---</string>
     <string name="temp_placeholder" tools:ignore="TypographyDashes">--.-°C</string>
     <string name="range_placeholder" tools:ignore="TypographyDashes">--- km</string>
-    <string name="range_estimate_placeholder" tools:ignore="TypographyDashes">--- km / --- km</string>
     <string name="soc_placeholder" tools:ignore="TypographyDashes">--.-- %</string>
     <string name="remaining_energy_placeholder" tools:ignore="TypographyDashes">--.- kWh</string>
     <string name="kw_placeholder" tools:ignore="TypographyDashes">--- kW</string>
@@ -176,4 +177,17 @@
     <string name="about_libraries_label">Použité knihovny a licence:</string>
     <string name="about_libraries_list">• Android Bluetooth Serial (Apache 2.0)\n• ReactiveX RxJava 2 &amp; RxAndroid (Apache 2.0)\n• Google AndroidX &amp; Material Components (Apache 2.0)</string>
     <string name="settings_github_button">🌐 Otevřít GitHub repozitář</string>
+
+    <!-- Cell Voltages & Temperatures Dialogs -->
+    <string name="cells_no_data">Zatím nebyla načtena data jednotlivých článků.</string>
+    <string name="cell_voltages_dialog_title">Napětí všech 96 článků</string>
+    <string name="btn_show_cells">📊 Zobrazit všech 96 článků</string>
+    <string name="btn_show_module_temps">🌡️ Zobrazit 6 teplot modulů baterie</string>
+    <string name="module_temps_no_data">Zatím nebyla načtena data teplot modulů.</string>
+    <string name="module_temps_dialog_title">Teploty 6 modulů baterie</string>
+    <string name="dialog_label_min">Min:</string>
+    <string name="dialog_label_avg">Průměr:</string>
+    <string name="dialog_label_max">Max:</string>
+    <string name="dialog_label_delta">Rozptyl (Δ):</string>
+    <string name="dialog_module_format">Modul %1$d:   %2$5.1f °C%3$s\n</string>
 </resources>

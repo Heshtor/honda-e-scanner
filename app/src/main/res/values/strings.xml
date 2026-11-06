@@ -48,7 +48,6 @@
     <string name="soh">Battery health (SoH)</string>
     <string name="remaining_energy">Usable net energy</string>
     <string name="range_dash_title">Range (cluster display)</string>
-    <string name="range_estimate_title">Range estimate (min / max)</string>
 
     <!-- Card 2: Power & Charging -->
     <string name="power_and_charging">Power and Charging</string>
@@ -93,8 +92,11 @@
     <string name="soh_test_live_title">Current Test Progress</string>
     <string name="soh_test_elapsed_time_title">Elapsed time</string>
     <string name="soh_test_samples_title">Sample count</string>
-    <string name="soh_test_power_title">Instant power / current</string>
+    <string name="soh_test_live_energy_title">Net Energy Consumed</string>
+    <string name="soh_test_live_distance_title">Distance Traveled</string>
+    <string name="soh_test_power_title">Instant power</string>
     <string name="soh_test_discharge_regen_title">Discharged / Regenerated</string>
+    <string name="soh_test_status_finalizing">Finalizing and evaluating test…</string>
 
     <!-- SoH Test Results -->
     <string name="soh_test_result_title">Battery Capacity Test Results</string>
@@ -155,7 +157,6 @@
     <string name="gear_placeholder">---</string>
     <string name="temp_placeholder" tools:ignore="TypographyDashes">--.-°C</string>
     <string name="range_placeholder" tools:ignore="TypographyDashes">--- km</string>
-    <string name="range_estimate_placeholder" tools:ignore="TypographyDashes">--- km / --- km</string>
     <string name="soc_placeholder" tools:ignore="TypographyDashes">--.-- %</string>
     <string name="remaining_energy_placeholder" tools:ignore="TypographyDashes">--.- kWh</string>
     <string name="kw_placeholder" tools:ignore="TypographyDashes">--- kW</string>
@@ -176,4 +177,17 @@
     <string name="about_libraries_label">Used Libraries &amp; Credits:</string>
     <string name="about_libraries_list">• Android Bluetooth Serial (Apache 2.0)\n• ReactiveX RxJava 2 &amp; RxAndroid (Apache 2.0)\n• Google AndroidX &amp; Material Components (Apache 2.0)</string>
     <string name="settings_github_button">🌐 Open GitHub Repository</string>
+
+    <!-- Cell Voltages & Temperatures Dialogs -->
+    <string name="cells_no_data">No individual cell voltage data loaded yet.</string>
+    <string name="cell_voltages_dialog_title">All 96 Cell Voltages</string>
+    <string name="btn_show_cells">📊 View all 96 cell voltages</string>
+    <string name="btn_show_module_temps">🌡️ View 6 battery module temperatures</string>
+    <string name="module_temps_no_data">No battery module temperature data loaded yet.</string>
+    <string name="module_temps_dialog_title">Battery Module Temperatures (6 Sensors)</string>
+    <string name="dialog_label_min">Min:</string>
+    <string name="dialog_label_avg">Avg:</string>
+    <string name="dialog_label_max">Max:</string>
+    <string name="dialog_label_delta">Delta (Δ):</string>
+    <string name="dialog_module_format">Module %1$d:   %2$5.1f °C%3$s\n</string>
 </resources>
