@@ -2,6 +2,7 @@ package cz.helicode.hondaescanner;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 
 public class ThemeHelper {
@@ -9,12 +10,19 @@ public class ThemeHelper {
     public static final String KEY_THEME = "pref_theme_mode";
 
     /**
-     * Applies the saved theme mode to AppCompatDelegate if it differs from current mode.
+     * Applies the saved theme mode to AppCompatDelegate and to the specific activity if applicable.
      */
     public static void applyTheme(Context context) {
         int savedMode = getSavedThemeMode(context);
         if (AppCompatDelegate.getDefaultNightMode() != savedMode) {
             AppCompatDelegate.setDefaultNightMode(savedMode);
+        }
+        if (context instanceof AppCompatActivity) {
+            AppCompatActivity activity = (AppCompatActivity) context;
+            if (activity.getDelegate().getLocalNightMode() != savedMode) {
+                activity.getDelegate().setLocalNightMode(savedMode);
+            }
+            activity.getDelegate().applyDayNight();
         }
     }
 
@@ -27,21 +35,18 @@ public class ThemeHelper {
     }
 
     /**
-     * Saves the theme mode and applies it to AppCompatDelegate only if it actually changed.
+     * Saves the theme mode and applies it globally and locally.
      */
     public static void setSavedThemeMode(Context context, int mode) {
-        int currentSaved = getSavedThemeMode(context);
-        int currentNightMode = AppCompatDelegate.getDefaultNightMode();
-
-        if (currentSaved == mode && currentNightMode == mode) {
-            return;
-        }
-
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         prefs.edit().putInt(KEY_THEME, mode).apply();
 
-        if (currentNightMode != mode) {
-            AppCompatDelegate.setDefaultNightMode(mode);
+        AppCompatDelegate.setDefaultNightMode(mode);
+
+        if (context instanceof AppCompatActivity) {
+            AppCompatActivity activity = (AppCompatActivity) context;
+            activity.getDelegate().setLocalNightMode(mode);
+            activity.getDelegate().applyDayNight();
         }
     }
 }

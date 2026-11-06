@@ -477,6 +477,12 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         outState.putBoolean("is_demo_mode", _isDemoMode);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ThemeHelper.applyTheme(this);
+    }
+
     private void selectTab(int tabIndex) {
         if (tabIndex != 1 && _isSohTestRunning) {
             Toast.makeText(this, R.string.soh_test_locked_toast, Toast.LENGTH_SHORT).show();

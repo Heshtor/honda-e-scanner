@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -13,11 +14,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
@@ -64,7 +68,11 @@ public class MainActivity extends AppCompatActivity {
         DeviceAdapter adapter = new DeviceAdapter();
         deviceList.setAdapter(adapter);
 
+        updateThemeStyles();
+
         swipeRefreshLayout.setOnRefreshListener(() -> {
+            ThemeHelper.applyTheme(this);
+            updateThemeStyles();
             checkAndRequestPermissions();
             _viewModel.refreshPairedDevices();
             swipeRefreshLayout.setRefreshing(false);
@@ -93,6 +101,45 @@ public class MainActivity extends AppCompatActivity {
 
         if (savedInstanceState == null) {
             new Thread(this::connectToLastConnectedDevice).start();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ThemeHelper.applyTheme(this);
+        updateThemeStyles();
+        _viewModel.refreshPairedDevices();
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        ThemeHelper.applyTheme(this);
+        updateThemeStyles();
+        RecyclerView deviceList = findViewById(R.id.main_devices);
+        if (deviceList != null && deviceList.getAdapter() != null) {
+            deviceList.getAdapter().notifyDataSetChanged();
+        }
+    }
+
+    private void updateThemeStyles() {
+        SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.main_swiperefresh);
+        if (swipeRefreshLayout != null) {
+            swipeRefreshLayout.setColorSchemeColors(ContextCompat.getColor(this, R.color.colorAccent));
+            swipeRefreshLayout.setProgressBackgroundColorSchemeColor(ContextCompat.getColor(this, R.color.colorCard));
+        }
+        CardView headerCard = findViewById(R.id.main_header_card);
+        if (headerCard != null) {
+            headerCard.setCardBackgroundColor(ContextCompat.getColor(this, R.color.colorCard));
+        }
+        CardView emptyCard = findViewById(R.id.main_empty_view);
+        if (emptyCard != null) {
+            emptyCard.setCardBackgroundColor(ContextCompat.getColor(this, R.color.colorCard));
+        }
+        CardView demoCard = findViewById(R.id.main_demo_card);
+        if (demoCard != null) {
+            demoCard.setCardBackgroundColor(ContextCompat.getColor(this, R.color.colorCard));
         }
     }
 
@@ -166,15 +213,21 @@ public class MainActivity extends AppCompatActivity {
 
     private class DeviceViewHolder extends RecyclerView.ViewHolder {
 
-        private final View _layout;
+        private final CardView _card;
         private final TextView _text1;
         private final TextView _text2;
+        private final FrameLayout _iconBadge;
+        private final ImageView _iconBluetooth;
+        private final ImageView _iconChevron;
 
         DeviceViewHolder(@NonNull View view) {
             super(view);
-            _layout = view.findViewById(R.id.list_item);
+            _card = (CardView) view.findViewById(R.id.list_item);
             _text1 = view.findViewById(R.id.list_item_text1);
             _text2 = view.findViewById(R.id.list_item_text2);
+            _iconBadge = view.findViewById(R.id.list_item_badge);
+            _iconBluetooth = view.findViewById(R.id.list_item_icon);
+            _iconChevron = view.findViewById(R.id.list_item_chevron);
         }
 
         void setupView(BluetoothDevice device) {
@@ -191,7 +244,26 @@ public class MainActivity extends AppCompatActivity {
 
             _text1.setText(displayName);
             _text2.setText(mac);
-            _layout.setOnClickListener(view -> openCommunicationsActivity(displayName, mac));
+
+            if (_card != null) {
+                _card.setCardBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.colorCard));
+                _card.setOnClickListener(view -> openCommunicationsActivity(displayName, mac));
+            }
+            if (_text1 != null) {
+                _text1.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.colorText));
+            }
+            if (_text2 != null) {
+                _text2.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.colorTextSecondary));
+            }
+            if (_iconBluetooth != null) {
+                _iconBluetooth.setColorFilter(ContextCompat.getColor(MainActivity.this, R.color.colorAccent));
+            }
+            if (_iconChevron != null) {
+                _iconChevron.setColorFilter(ContextCompat.getColor(MainActivity.this, R.color.colorAccent));
+            }
+            if (_iconBadge != null) {
+                _iconBadge.setBackground(ContextCompat.getDrawable(MainActivity.this, R.drawable.bg_icon_badge));
+            }
         }
     }
 
@@ -201,7 +273,7 @@ public class MainActivity extends AppCompatActivity {
         @NonNull
         @Override
         public DeviceViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new DeviceViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item, parent, false));
+            return new DeviceViewHolder(LayoutInflater.from(MainActivity.this).inflate(R.layout.list_item, parent, false));
         }
 
         @Override

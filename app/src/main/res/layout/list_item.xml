@@ -24,12 +24,14 @@
         android:padding="14dp">
 
         <FrameLayout
+            android:id="@+id/list_item_badge"
             android:layout_width="42dp"
             android:layout_height="42dp"
             android:layout_marginEnd="14dp"
             android:background="@drawable/bg_icon_badge">
 
             <ImageView
+                android:id="@+id/list_item_icon"
                 android:layout_width="22dp"
                 android:layout_height="22dp"
                 android:layout_gravity="center"
@@ -65,6 +67,7 @@
         </LinearLayout>
 
         <ImageView
+            android:id="@+id/list_item_chevron"
             android:layout_width="22dp"
             android:layout_height="22dp"
             android:layout_marginStart="10dp"
