@@ -395,6 +395,18 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
             });
         }
 
+        Button githubButton = findViewById(R.id.settings_btn_github);
+        if (githubButton != null) {
+            githubButton.setOnClickListener(v -> {
+                try {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Heshtor/honda-e-scanner"));
+                    startActivity(intent);
+                } catch (Exception e) {
+                    Log.e(TAG, "Cannot open browser for GitHub", e);
+                }
+            });
+        }
+
         // Battery & Range Card
         _rangeDashText = findViewById(R.id.communicate_range_dash);
         _rangeEstimateText = findViewById(R.id.communicate_range_estimate);

@@ -30,13 +30,15 @@ Connects via Bluetooth to read proprietary UDS parameters and real-time telemetr
 
 ## 🛠️ Libraries & Credits
 
-* **[Android Bluetooth Serial](https://github.com/harryjph/android-bluetooth-serial)** by HarrySoft (Apache License 2.0) – Bluetooth Classic (RFCOMM/SPP) connection handling.
+* **[Android Bluetooth Serial](https://github.com/harryjph/android-bluetooth-serial)** (Apache License 2.0) – Bluetooth Classic (RFCOMM/SPP) connection handling.
 * **[RxJava 2 & RxAndroid](https://github.com/ReactiveX/RxJava)** (Apache License 2.0) – Reactive stream processing.
-* **[AndroidX](https://developer.android.com/jetpack/androidx) & [Material Components](https://github.com/material-components/material-components-android)** by Google (Apache License 2.0) – Architecture components, ViewModel/LiveData, and Material UI.
+* **[AndroidX](https://developer.android.com/jetpack/androidx) & [Material Components](https://github.com/material-components/material-components-android)** (Apache License 2.0) – Architecture components, ViewModel/LiveData, and Material UI.
 
 ---
 
-## 📄 License
+## 📄 License & Author
 
-This project is licensed under the **European Union Public Licence (EUPL v1.2)**.  
-See the `LICENSE` file for details.
+* **Author:** Martin Hruboš ([@Heshtor](https://github.com/Heshtor))
+* **License:** [European Union Public Licence (EUPL) v1.2](LICENSE)
+
+The European Union Public Licence (EUPL) is a copyleft free and open-source software license created on the initiative of and approved by the European Commission in 23 official languages of the European Union. See the [LICENSE](LICENSE) file for the full legal text.

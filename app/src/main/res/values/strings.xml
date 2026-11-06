@@ -164,4 +164,16 @@
     <string name="ambient_temp_placeholder" tools:ignore="TypographyDashes">--.- °C</string>
     <string name="aux_bat_placeholder" tools:ignore="TypographyDashes">--.- V</string>
     <string name="odo_placeholder" tools:ignore="TypographyDashes">--- km</string>
+    <!-- About & Credits -->
+    <string name="settings_about_title">ℹ️ About Application</string>
+    <string name="settings_about_desc">Diagnostic tool and battery monitor developed for the Honda e electric vehicle.</string>
+    <string name="about_app_label">Application:</string>
+    <string name="about_app_value">Honda e Scanner v1.0</string>
+    <string name="about_author_label">Author:</string>
+    <string name="about_author_value">Martin Hruboš (Heshtor)</string>
+    <string name="about_license_label">License:</string>
+    <string name="about_license_value">EUPL-1.2 (Open Source)</string>
+    <string name="about_libraries_label">Used Libraries &amp; Credits:</string>
+    <string name="about_libraries_list">• Android Bluetooth Serial (Apache 2.0)\n• ReactiveX RxJava 2 &amp; RxAndroid (Apache 2.0)\n• Google AndroidX &amp; Material Components (Apache 2.0)</string>
+    <string name="settings_github_button">🌐 Open GitHub Repository</string>
 </resources>
