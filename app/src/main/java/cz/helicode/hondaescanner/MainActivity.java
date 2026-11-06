@@ -55,6 +55,10 @@ public class MainActivity extends AppCompatActivity {
 
         RecyclerView deviceList = findViewById(R.id.main_devices);
         SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.main_swiperefresh);
+        View emptyView = findViewById(R.id.main_empty_view);
+
+        swipeRefreshLayout.setColorSchemeColors(ContextCompat.getColor(this, R.color.colorAccent));
+        swipeRefreshLayout.setProgressBackgroundColorSchemeColor(ContextCompat.getColor(this, R.color.colorCard));
 
         deviceList.setLayoutManager(new LinearLayoutManager(this));
         DeviceAdapter adapter = new DeviceAdapter();
@@ -66,7 +70,12 @@ public class MainActivity extends AppCompatActivity {
             swipeRefreshLayout.setRefreshing(false);
         });
 
-        _viewModel.getPairedDeviceList().observe(MainActivity.this, adapter::updateList);
+        _viewModel.getPairedDeviceList().observe(MainActivity.this, devices -> {
+            adapter.updateList(devices);
+            if (emptyView != null) {
+                emptyView.setVisibility((devices == null || devices.isEmpty()) ? View.VISIBLE : View.GONE);
+            }
+        });
 
         Button demoButton = findViewById(R.id.main_btn_demo);
         if (demoButton != null) {
@@ -157,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
 
     private class DeviceViewHolder extends RecyclerView.ViewHolder {
 
-        private final RelativeLayout _layout;
+        private final View _layout;
         private final TextView _text1;
         private final TextView _text2;
 

@@ -1,7 +1,12 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Honda e Scanner</string>
     <string name="messages">Messages:</string>
-    <string name="paired_devices">Paired devices:</string>
+    <string name="paired_devices">Paired devices</string>
+    <string name="main_select_device_hint">Select a paired adapter (e.g. vLinker MC+) to connect to the vehicle:</string>
+    <string name="main_no_devices_title">No paired adapters found</string>
+    <string name="main_no_devices_desc">No paired Bluetooth adapter was found.\n\n1. Plug your adapter (e.g. vLinker MC+) into the vehicle\'s OBD-II port.\n2. Pair the adapter in your phone\'s Bluetooth settings.\n3. Swipe down to refresh the list.</string>
+    <string name="main_simulation_title">🎮 Demo Mode (Simulation)</string>
+    <string name="main_simulation_desc">Explore all features, screens, and diagnostic data without connecting to a vehicle.</string>
     <string name="no_bluetooth">Bluetooth is unavailable.</string>
     <string name="device_name_format">Device: %1$s</string>
     <string name="status_connecting">Status: Connecting</string>

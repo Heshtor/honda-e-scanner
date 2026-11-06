@@ -1,7 +1,12 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Honda e Scanner</string>
     <string name="messages">Zprávy:</string>
-    <string name="paired_devices">Spárovaná zařízení:</string>
+    <string name="paired_devices">Spárovaná zařízení</string>
+    <string name="main_select_device_hint">Vyberte spárovaný adaptér (např. vLinker MC+) pro připojení k vozidlu:</string>
+    <string name="main_no_devices_title">Žádný spárovaný adaptér</string>
+    <string name="main_no_devices_desc">V telefonu nebyl nalezen žádný spárovaný Bluetooth adaptér.\n\n1. Zapojte adaptér (např. vLinker MC+) do OBD-II zásuvky vozidla.\n2. Spárujte adaptér v nastavení Bluetooth vašeho telefonu.\n3. Potáhněte prstem dolů pro obnovení seznamu.</string>
+    <string name="main_simulation_title">🎮 Demo režim (simulace)</string>
+    <string name="main_simulation_desc">Vyzkoušejte si všechny funkce, obrazovky a diagnostiku bez nutnosti připojení k vozidlu.</string>
     <string name="no_bluetooth">Bluetooth není k dispozici.</string>
     <string name="device_name_format">Zařízení: %1$s</string>
     <string name="status_connecting">Stav: Připojování</string>
