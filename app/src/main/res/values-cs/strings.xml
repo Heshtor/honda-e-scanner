@@ -7,6 +7,12 @@
     <string name="main_no_devices_desc">V telefonu nebyl nalezen žádný spárovaný Bluetooth adaptér.\n\n1. Zapojte adaptér (např. vLinker MC+) do OBD-II zásuvky vozidla.\n2. Spárujte adaptér v nastavení Bluetooth vašeho telefonu.\n3. Potáhněte prstem dolů pro obnovení seznamu.</string>
     <string name="main_simulation_title">🎮 Demo režim (simulace)</string>
     <string name="main_simulation_desc">Vyzkoušejte si všechny funkce, obrazovky a diagnostiku bez nutnosti připojení k vozidlu.</string>
+    <string name="default_adapter_name">OBD adaptér</string>
+    <string name="consumption_regen_format">%1$.1f kWh/100km (Rekuperace)</string>
+    <string name="notification_status_format">SoC: %1$.1f%% | Výkon: %2$.2f kW | Dojezd: %3$d km</string>
+    <string name="notification_soh_test_format">Test SoH: %1$.2f kWh | ΔSoC: %2$.1f%% | P: %3$+.1f kW</string>
+    <string name="error_format">Chyba: %1$s</string>
+    <string name="unknown_error">neznámá</string>
     <string name="no_bluetooth">Bluetooth není k dispozici.</string>
     <string name="device_name_format">Zařízení: %1$s</string>
     <string name="status_connecting">Stav: Připojování</string>
@@ -80,7 +86,7 @@
     <!-- Battery SoH Test Mode -->
     <string name="soh_test_control_title">Ovládání měření kapacity a SoH</string>
     <string name="soh_test_status_idle">Stav: Připraveno ke spuštění</string>
-    <string name="soh_test_status_running">Stav: Měření kapacity probíhá (vysokorychlostní vzorkování)...</string>
+    <string name="soh_test_status_running">Stav: Měření kapacity probíhá...</string>
     <string name="soh_test_status_finished">Stav: Test dokončen a vyhodnocen</string>
     <string name="soh_test_btn_start">▶️ ZAHÁJIT TEST SOH</string>
     <string name="soh_test_btn_stop">⏹️ UKONČIT TEST A VYHODNOTIT</string>

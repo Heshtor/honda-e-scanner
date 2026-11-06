@@ -63,15 +63,15 @@ public class CanTrafficLogger {
 
             _writer = new PrintWriter(new FileWriter(_currentLogFile, true), true);
             _writer.println("================================================================================");
-            _writer.println("Honda e Scanner - Diagnostický záznam komunikace CAN & OBD");
-            _writer.println("Datum a čas spuštění: " + _timeFormat.format(new Date()));
-            _writer.println("Vozidlo: Honda e Advance (2021)");
+            _writer.println("Honda e Scanner - CAN & OBD Diagnostic Communication Log");
+            _writer.println("Start date & time: " + _timeFormat.format(new Date()));
+            _writer.println("Vehicle: Honda e Advance (2021)");
             _writer.println("VIN: " + safeVin);
-            _writer.println("Vysvětlivky: [TX] = dotaz odeslaný adaptéru | [RX] = surová odpověď z CAN sběrnice");
+            _writer.println("Legend: [TX] = query sent to adapter | [RX] = raw response from CAN bus");
             _writer.println("================================================================================");
             _writer.flush();
         } catch (Exception e) {
-            Log.e(TAG, "Chyba při spuštění CAN traffic loggeru", e);
+            Log.e(TAG, "Error starting CAN traffic logger", e);
         }
     }
 
@@ -96,7 +96,7 @@ public class CanTrafficLogger {
     public synchronized void stopLogging() {
         if (_writer != null) {
             _writer.println("================================================================================");
-            _writer.println("Záznam ukončen: " + _timeFormat.format(new Date()));
+            _writer.println("Logging stopped: " + _timeFormat.format(new Date()));
             _writer.println("================================================================================");
             _writer.flush();
             _writer.close();
@@ -133,7 +133,7 @@ public class CanTrafficLogger {
             _writer.flush();
         }
         if (_currentLogFile == null || !_currentLogFile.exists()) {
-            throw new IOException("Zatím nebyl zaznamenán žádný CAN log soubor.");
+            throw new IOException("No CAN log file recorded yet.");
         }
 
         String exportName = _currentLogFile.getName();
@@ -146,11 +146,11 @@ public class CanTrafficLogger {
 
             Uri uri = context.getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
             if (uri == null) {
-                throw new IOException("Systém MediaStore nepovolil vytvořit soubor v Downloads.");
+                throw new IOException("MediaStore could not create file in Downloads.");
             }
             try (InputStream in = new FileInputStream(_currentLogFile);
                  OutputStream out = context.getContentResolver().openOutputStream(uri)) {
-                if (out == null) throw new IOException("Nelze otevřít výstupní proud pro zápis souboru.");
+                if (out == null) throw new IOException("Cannot open output stream for writing file.");
                 byte[] buffer = new byte[8192];
                 int read;
                 while ((read = in.read(buffer)) != -1) {
@@ -158,7 +158,7 @@ public class CanTrafficLogger {
                 }
                 out.flush();
             }
-            return "Stažené / Download / Honda_e_Scanner / " + exportName;
+            return "Downloads / Honda_e_Scanner / " + exportName;
         } else {
             File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
             File targetDir = new File(downloadsDir, "Honda_e_Scanner");

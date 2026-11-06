@@ -72,7 +72,6 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
     private static final String BATTEMP_ID = "62202A";
     private static final String MOTOR_RPM_ID = "622001";
 
-    private static final int RANGE_ESTIMATE_WINDOW_5KM = 5;
     private static final int MAX_RETRY = 5;
 
     private static final String NOTIFICATION_CHANNEL_ID = "SoC";
@@ -80,8 +79,6 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
 
     // Honda e usable battery capacity when new (net kWh)
     private static final double HONDA_E_NET_CAPACITY_KWH = 28.5;
-    // Honda e factory WLTP rated range (km) used for base dashboard GOM estimation
-    private static final double HONDA_E_WLTP_RANGE_KM = 200.0;
 
     private final List<String> _connectionCommands = Arrays.asList(
             "ATWS",
@@ -111,26 +108,26 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
             "ATSHDA60F1",
             "ATFCSH18DA60F1",
             "ATCRA18DAF160",
-            "227028",        // Teplota okolí (°C)
-            "227022",        // ODO / Tachometr v km
-            "22702A",        // Dojezd palubního displeje v km
+            "227028",        // Ambient temperature (°C)
+            "227022",        // ODO / Odometer in km
+            "22702A",        // Instrument cluster dashboard range in km
 
-            // --- 2. BMS / TRAKČNÍ BATERIE (ECU 15) ---
+            // --- 2. BMS / TRACTION BATTERY (ECU 15) ---
             "ATSHDA15F1",
             "ATFCSH18DA15F1",
             "ATCRA18DAF115",
-            "222021",        // SOH (%), Napětí packu (V), Proud (A), Výkon (kW)
-            "222029",        // SOC (%), stav nabíjení (AC/DC)
+            "222021",        // SOH (%), Pack Voltage (V), Current (A), Power (kW)
+            "222029",        // SOC (%), Charging status (AC/DC)
 
             // --- 3. POWERTRAIN / VCU / MOTOR (ECU 01) ---
             "ATSHDA01F1",
             "ATFCSH18DA01F1",
             "ATCRA18DAF101",
-            "22202A",        // Teplota trakční baterie (°C) na ECU 01
-            "222001",        // Otáčky elektromotoru (RPM) na ECU 01
+            "22202A",        // Traction battery temperature (°C) on ECU 01
+            "222001",        // Motor RPM on ECU 01
 
-            // --- 4. 12V AKUMULÁTOR ---
-            "ATRV"           // Napětí 12V palubní sítě
+            // --- 4. 12V AUXILIARY BATTERY ---
+            "ATRV"           // 12V auxiliary system voltage
     );
 
     private static final String LOG_FILE_HEADER = "sysTimeMs,ODO,SoC (dash),SoC (min),SoC (max),SoH,Battemp,Ambienttemp,kW,Amp,Volt,AuxBat,Connection,Charging,Speed,Lat,Lon,InvTemp,MotorRpm,CellMinMv,CellMaxMv,CellDeltaMv";
@@ -197,14 +194,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
 
     // Cell voltage metrics
     private int _cellMinMv, _cellMaxMv, _cellDeltaMv;
-    private int _socRangeMinWindow = 0, _socRangeMaxWindow = 0, _socRangeAvgWindow = 0;
-
-    private final double[] _socHistory = new double[RANGE_ESTIMATE_WINDOW_5KM + 1];
-    private final double[] _socMinHistory = new double[RANGE_ESTIMATE_WINDOW_5KM + 1];
-    private final double[] _socMaxHistory = new double[RANGE_ESTIMATE_WINDOW_5KM + 1];
-    private final double[] _batTempHistory = new double[RANGE_ESTIMATE_WINDOW_5KM + 1];
-    private int _socHistoryPosition = 0;
-    private int _lastOdo = Integer.MIN_VALUE, _odo;
+    private int _odo;
 
     private String _vin = "HONDA_E";
     private String _lat = "", _lon = "";
@@ -279,8 +269,8 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         _notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.mipmap.logo)
                 .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.logo))
-                .setContentTitle("Honda e Scanner")
-                .setContentText("Connected")
+                .setContentTitle(getString(R.string.app_name))
+                .setContentText(getString(R.string.connected))
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_LOW);
         _notificationManagerCompat = NotificationManagerCompat.from(this);
@@ -657,7 +647,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
             Log.d(TAG, "Loop interrupted");
         } catch (Exception e) {
             Log.e(TAG, "Exception in CAN loop", e);
-            setText(_messageText, "Chyba: " + (e.getMessage() != null ? e.getMessage() : "neznámá"));
+            setText(_messageText, String.format(getString(R.string.error_format), (e.getMessage() != null ? e.getMessage() : getString(R.string.unknown_error))));
             try {
                 Thread.sleep(CAN_BUS_SCAN_INTERVAL);
             } catch (InterruptedException ignored) {}
@@ -763,7 +753,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
 
         _sohTestStartSysTimeMs = System.currentTimeMillis();
         _sohTestLastElapsedRealtimeMs = 0;
-        _sohTestStartSoc = _soc > 0 ? _soc : 85.0;
+        _sohTestStartSoc = _soc > 0 ? _soc : 76.5;
         _sohTestStartOdo = _odo > 0 ? _odo : 15000;
         _sohTestTotalNetEnergyKwh = 0.0;
         _sohTestTotalDischargeKwh = 0.0;
@@ -987,29 +977,18 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
             setText(_energyText, getString(R.string.remaining_energy_placeholder));
         }
 
-        // Range estimation based on remaining usable energy (standing) and 5km rolling window (driving)
-        int estRangeAvg = _usableEnergyKwh > 0 ? (int) Math.round(_usableEnergyKwh / 0.155) : 0;
-        int estRangeMin = _usableEnergyKwh > 0 ? (int) Math.round(_usableEnergyKwh / 0.190) : 0;
-        int estRangeMax = _usableEnergyKwh > 0 ? (int) Math.round(_usableEnergyKwh / 0.130) : 0;
-
-        int dashRangeEstimated = (int) Math.round(HONDA_E_WLTP_RANGE_KM * (_soc / 100.0));
-
         // Exact dashboard range from Cluster DID 0x702A
         if (_rangeFromDash > 0) {
             setText(_rangeDashText, _rangeFromDash + " km");
-        } else if (_socRangeAvgWindow > 0) {
-            setText(_rangeDashText, _socRangeAvgWindow + " km (5km)");
-        } else if (dashRangeEstimated > 0) {
-            setText(_rangeDashText, dashRangeEstimated + " km (odhad)");
-        } else if (estRangeAvg > 0) {
-            setText(_rangeDashText, "~" + estRangeAvg + " km");
         } else {
             setText(_rangeDashText, getString(R.string.range_placeholder));
         }
 
-        if (_socRangeMinWindow > 0 && _socRangeMaxWindow > 0) {
-            setText(_rangeEstimateText, String.format(Locale.ENGLISH, "%d – %d km (měřeno)", _socRangeMinWindow, _socRangeMaxWindow));
-        } else if (estRangeMin > 0 && estRangeMax > 0) {
+        // Theoretical range by consumption based on usable battery energy (19 / 13 kWh/100km)
+        int estRangeMin = _usableEnergyKwh > 0 ? (int) Math.round(_usableEnergyKwh / 0.190) : 0;
+        int estRangeMax = _usableEnergyKwh > 0 ? (int) Math.round(_usableEnergyKwh / 0.130) : 0;
+
+        if (estRangeMin > 0 && estRangeMax > 0) {
             setText(_rangeEstimateText, String.format(Locale.ENGLISH, "%d – %d km (19 / 13 kWh)", estRangeMin, estRangeMax));
         } else {
             setText(_rangeEstimateText, getString(R.string.dash_placeholder));
@@ -1048,7 +1027,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         if (currentSpeed > 3.0) {
             _instantConsumption = (_power / currentSpeed) * 100.0;
             if (_instantConsumption < -0.1) {
-                setText(_consumptionText, String.format(Locale.ENGLISH, "%.1f kWh/100km (Rekuperace)", _instantConsumption));
+                setText(_consumptionText, String.format(Locale.ENGLISH, getString(R.string.consumption_regen_format), _instantConsumption));
                 runOnUiThread(() -> _consumptionText.setTextColor(ContextCompat.getColor(this, R.color.colorRegen)));
             } else {
                 setText(_consumptionText, String.format(Locale.ENGLISH, "%+.1f kWh/100km", _instantConsumption));
@@ -1164,10 +1143,10 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         }
         try {
             if (_isSohTestRunning) {
-                _notificationBuilder.setContentText(String.format(Locale.ENGLISH, "Test SoH: %.2f kWh | ΔSoC: %.1f%% | P: %+.1f kW",
+                _notificationBuilder.setContentText(String.format(Locale.ENGLISH, getString(R.string.notification_soh_test_format),
                         _sohTestTotalNetEnergyKwh, Math.max(0, _sohTestStartSoc - _soc), _power));
             } else {
-                _notificationBuilder.setContentText(String.format(Locale.ENGLISH, "SoC: %.1f%% | Výkon: %.2fkW | Dojezd: %dkm",
+                _notificationBuilder.setContentText(String.format(Locale.ENGLISH, getString(R.string.notification_status_format),
                         _soc, _power, _rangeFromDash));
             }
             _notificationManagerCompat.notify(NOTIFICATION_ID, _notificationBuilder.build());
@@ -1257,12 +1236,6 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         else if (message.contains(ODO_ID) || messageID.contains(ODO_ID)) {
             if (message.length() >= 26) {
                 _odo = Integer.parseInt(message.substring(18, 26), 16);
-                if (_lastOdo == Integer.MIN_VALUE) {
-                    _lastOdo = _odo;
-                }
-                if (_odo > 0 && _lastOdo < _odo) {
-                    updateOdoRangeEstimates();
-                }
                 _newMessagesCount++;
             }
         }
@@ -1289,35 +1262,6 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
             try {
                 _auxBat = Double.parseDouble(matcher.group(1));
             } catch (NumberFormatException ignored) {}
-        }
-    }
-
-    private void updateOdoRangeEstimates() {
-        _lastOdo = _odo;
-        _socHistory[_socHistoryPosition] = _soc;
-        _socMinHistory[_socHistoryPosition] = _socMin;
-        _socMaxHistory[_socHistoryPosition] = _socMax;
-        _batTempHistory[_socHistoryPosition] = _batTemp;
-        _socHistoryPosition = (_socHistoryPosition + 1) % (RANGE_ESTIMATE_WINDOW_5KM + 1);
-
-        int oldIndex = (_socHistoryPosition + 1) % (RANGE_ESTIMATE_WINDOW_5KM + 1);
-        double socDelta = _socHistory[oldIndex] - _soc;
-        double socMinDelta = _socMinHistory[oldIndex] - _socMin;
-        double socMaxDelta = _socMaxHistory[oldIndex] - _socMax;
-        double batTempDelta = _batTemp - _batTempHistory[oldIndex];
-
-        if (socDelta > 0.05 && socMinDelta > 0.05 && socMaxDelta > 0.05) {
-            _socRangeMinWindow = (int) Math.round((_socMin / socMinDelta) * RANGE_ESTIMATE_WINDOW_5KM);
-            _socRangeMaxWindow = (int) Math.round((_socMax / socMaxDelta) * RANGE_ESTIMATE_WINDOW_5KM);
-            _socRangeAvgWindow = (int) Math.round((_soc / socDelta) * RANGE_ESTIMATE_WINDOW_5KM);
-            double avgConsumption5km = (socDelta * HONDA_E_NET_CAPACITY_KWH / RANGE_ESTIMATE_WINDOW_5KM) * 100.0;
-            setText(_rangeEstimateText, String.format(Locale.ENGLISH, "%d – %d km (%.1f kWh)",
-                    _socRangeMinWindow, _socRangeMaxWindow, avgConsumption5km));
-            if (_batTempSpread > 0) {
-                setText(_batTempDeltaText, String.format(Locale.ENGLISH, "%.1f °C (trend: %+1$.1f°C/5km)", _batTempSpread, batTempDelta));
-            } else {
-                setText(_batTempDeltaText, String.format(Locale.ENGLISH, "0.0 °C (trend: %+1$.1f°C/5km)", batTempDelta));
-            }
         }
     }
 
@@ -1495,9 +1439,6 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         _invTemp = 0;
         _chargingConnection = ChargingConnection.NC;
         _isCharging = false;
-        _socRangeMinWindow = 0;
-        _socRangeMaxWindow = 0;
-        _socRangeAvgWindow = 0;
         _vin = "";
         _lat = "";
         _lon = "";
@@ -1598,7 +1539,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
     }
 
     enum ChargingConnection {
-        NC("NE"),
+        NC("None"),
         AC("AC"),
         DC("DC (CCS)");
 

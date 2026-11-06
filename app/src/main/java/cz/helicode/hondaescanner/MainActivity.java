@@ -178,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         void setupView(BluetoothDevice device) {
-            String name = "OBD Adaptér";
+            String name = getString(R.string.default_adapter_name);
             try {
                 if (device.getName() != null && !device.getName().isEmpty()) {
                     name = device.getName();

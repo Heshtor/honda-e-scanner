@@ -7,6 +7,12 @@
     <string name="main_no_devices_desc">No paired Bluetooth adapter was found.\n\n1. Plug your adapter (e.g. vLinker MC+) into the vehicle\'s OBD-II port.\n2. Pair the adapter in your phone\'s Bluetooth settings.\n3. Swipe down to refresh the list.</string>
     <string name="main_simulation_title">🎮 Demo Mode (Simulation)</string>
     <string name="main_simulation_desc">Explore all features, screens, and diagnostic data without connecting to a vehicle.</string>
+    <string name="default_adapter_name">OBD Adapter</string>
+    <string name="consumption_regen_format">%1$.1f kWh/100km (Regen)</string>
+    <string name="notification_status_format">SoC: %1$.1f%% | Power: %2$.2f kW | Range: %3$d km</string>
+    <string name="notification_soh_test_format">SoH Test: %1$.2f kWh | ΔSoC: %2$.1f%% | P: %3$+.1f kW</string>
+    <string name="error_format">Error: %1$s</string>
+    <string name="unknown_error">unknown</string>
     <string name="no_bluetooth">Bluetooth is unavailable.</string>
     <string name="device_name_format">Device: %1$s</string>
     <string name="status_connecting">Status: Connecting</string>
@@ -80,7 +86,7 @@
     <!-- Battery SoH Test Mode -->
     <string name="soh_test_control_title">Capacity &amp; SoH Measurement</string>
     <string name="soh_test_status_idle">Status: Ready to start</string>
-    <string name="soh_test_status_running">Status: Capacity measurement running (high-speed sampling)...</string>
+    <string name="soh_test_status_running">Status: Capacity measurement running...</string>
     <string name="soh_test_status_finished">Status: Test completed and evaluated</string>
     <string name="soh_test_btn_start">▶️ START SOH TEST</string>
     <string name="soh_test_btn_stop">⏹️ STOP TEST &amp; EVALUATE</string>
