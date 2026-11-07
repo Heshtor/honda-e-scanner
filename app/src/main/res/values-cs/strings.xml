@@ -133,8 +133,8 @@
     <string name="height_phone_title">Nadmořská výška (GPS)</string>
     <string name="vin">VIN kód vozidla</string>
 
-    <string name="channel_name">Zkušební kanál</string>
-    <string name="channel_description">Zkušební popis</string>
+    <string name="channel_name">Stav baterie a diagnostika</string>
+    <string name="channel_description">Průběžná notifikace o stavu baterie a diagnostických údajích</string>
 
     <!-- Dynamic string resources for Java code -->
     <string name="can_connecting">Navazuji komunikaci s CAN sběrnicí...</string>
@@ -194,4 +194,15 @@
     <string name="dialog_label_max">Max:</string>
     <string name="dialog_label_delta">Rozptyl (Δ):</string>
     <string name="dialog_module_format">Modul %1$d:   %2$5.1f °C%3$s\n</string>
+
+    <!-- App Icon / Vehicle Color Settings -->
+    <string name="settings_icon_title">🎨 Ikona aplikace (Barva auta)</string>
+    <string name="settings_icon_desc">Zvolte ikonu odpovídající barvě vaší Hondy e. Změna se projeví na domovské obrazovce telefonu.</string>
+    <string name="color_white">Bílá</string>
+    <string name="color_black">Černá</string>
+    <string name="color_grey">Šedá</string>
+    <string name="color_red">Červená</string>
+    <string name="color_blue">Modrá</string>
+    <string name="color_yellow">Žlutá</string>
+    <string name="icon_changed_toast">Ikona aplikace byla změněna na: %1$s.</string>
 </resources>

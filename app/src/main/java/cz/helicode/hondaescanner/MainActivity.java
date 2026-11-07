@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
+        AppIconHelper.applyTaskDescription(this);
         setContentView(R.layout.activity_main);
 
         _viewModel = new ViewModelProvider(this).get(MainActivityViewModel.class);
@@ -108,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         ThemeHelper.applyTheme(this);
+        AppIconHelper.applyTaskDescription(this);
         updateThemeStyles();
         _viewModel.refreshPairedDevices();
     }

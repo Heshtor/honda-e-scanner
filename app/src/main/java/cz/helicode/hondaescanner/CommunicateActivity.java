@@ -3,11 +3,13 @@ package cz.helicode.hondaescanner;
 import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -28,6 +30,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -165,6 +168,8 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
     private RadioButton _settingsLangCs, _settingsLangEn;
     private RadioButton _settingsThemeDark, _settingsThemeLight, _settingsThemeSystem;
     private TextView _logStatusText;
+    private View _btnIconWhite, _btnIconBlack, _btnIconGrey, _btnIconRed, _btnIconBlue, _btnIconYellow;
+    private TextView _textIconWhite, _textIconBlack, _textIconGrey, _textIconRed, _textIconBlue, _textIconYellow;
 
     // Battery SoH Test Mode
     private TextView _sohTestStatusText;
@@ -238,6 +243,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
     protected void onCreate(Bundle savedInstanceState) {
         ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
+        AppIconHelper.applyTaskDescription(this);
         setContentView(R.layout.activity_communicate);
 
         if (getSupportActionBar() != null) {
@@ -249,7 +255,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
             @Override
             public void handleOnBackPressed() {
                 if (_isSohTestRunning) {
-                    Toast.makeText(CommunicateActivity.this, R.string.soh_test_locked_toast, Toast.LENGTH_SHORT).show();
+                    AppToast.show(CommunicateActivity.this, R.string.soh_test_locked_toast);
                     return;
                 }
                 _loopRunning = false;
@@ -290,11 +296,24 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
 
         // Notification setup
         createNotificationChannel();
+        int iconRes = AppIconHelper.getSelectedIconDrawableId(this);
+        Bitmap iconBitmap = AppIconHelper.getSelectedIconBitmap(this);
+
+        Intent contentIntent = new Intent(this, CommunicateActivity.class);
+        contentIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                this,
+                0,
+                contentIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0)
+        );
+
         _notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-                .setSmallIcon(R.mipmap.logo)
-                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.logo))
+                .setSmallIcon(iconRes)
+                .setLargeIcon(iconBitmap)
                 .setContentTitle(getString(R.string.app_name))
                 .setContentText(getString(R.string.connected))
+                .setContentIntent(pendingIntent)
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_LOW);
         _notificationManagerCompat = NotificationManagerCompat.from(this);
@@ -433,6 +452,8 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
             });
         }
 
+        initAppIconSettings();
+
         // Battery & Range Card
         _rangeDashText = findViewById(R.id.communicate_range_dash);
         _socDashText = findViewById(R.id.communicate_soc_dash);
@@ -518,7 +539,9 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
     protected void onResume() {
         super.onResume();
         ThemeHelper.applyTheme(this);
+        AppIconHelper.applyTaskDescription(this);
         updateLogStatusUI();
+        updateAppIconSelectionUI(AppIconHelper.getSelectedIcon(this));
     }
 
     private void selectTab(int tabIndex) {
@@ -554,6 +577,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
 
         if (tabIndex == 2) {
             updateLogStatusUI();
+            updateAppIconSelectionUI(AppIconHelper.getSelectedIcon(this));
         }
     }
 
@@ -595,7 +619,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
             Uri uri = CanTrafficLogger.getInstance().getShareUri(this);
             updateLogStatusUI();
             if (uri == null) {
-                Toast.makeText(this, R.string.no_log_to_export, Toast.LENGTH_SHORT).show();
+                AppToast.show(this, R.string.no_log_to_export);
                 return;
             }
             Intent intent = new Intent(Intent.ACTION_SEND);
@@ -605,7 +629,75 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
             startActivity(Intent.createChooser(intent, getString(R.string.share_chooser_title)));
         } catch (Exception e) {
             Log.e(TAG, "Share log error", e);
-            Toast.makeText(this, getString(R.string.log_export_error, e.getMessage()), Toast.LENGTH_LONG).show();
+            AppToast.show(this, getString(R.string.log_export_error, e.getMessage()), AppToast.LENGTH_LONG);
+        }
+    }
+
+    private void initAppIconSettings() {
+        _btnIconWhite = findViewById(R.id.btn_icon_white);
+        _btnIconBlack = findViewById(R.id.btn_icon_black);
+        _btnIconGrey = findViewById(R.id.btn_icon_grey);
+        _btnIconRed = findViewById(R.id.btn_icon_red);
+        _btnIconBlue = findViewById(R.id.btn_icon_blue);
+        _btnIconYellow = findViewById(R.id.btn_icon_yellow);
+
+        _textIconWhite = findViewById(R.id.text_icon_white);
+        _textIconBlack = findViewById(R.id.text_icon_black);
+        _textIconGrey = findViewById(R.id.text_icon_grey);
+        _textIconRed = findViewById(R.id.text_icon_red);
+        _textIconBlue = findViewById(R.id.text_icon_blue);
+        _textIconYellow = findViewById(R.id.text_icon_yellow);
+
+        if (_btnIconWhite != null) {
+            _btnIconWhite.setOnClickListener(v -> onAppIconTileClicked(AppIconHelper.ICON_WHITE, getString(R.string.color_white)));
+        }
+        if (_btnIconBlack != null) {
+            _btnIconBlack.setOnClickListener(v -> onAppIconTileClicked(AppIconHelper.ICON_BLACK, getString(R.string.color_black)));
+        }
+        if (_btnIconGrey != null) {
+            _btnIconGrey.setOnClickListener(v -> onAppIconTileClicked(AppIconHelper.ICON_GREY, getString(R.string.color_grey)));
+        }
+        if (_btnIconRed != null) {
+            _btnIconRed.setOnClickListener(v -> onAppIconTileClicked(AppIconHelper.ICON_RED, getString(R.string.color_red)));
+        }
+        if (_btnIconBlue != null) {
+            _btnIconBlue.setOnClickListener(v -> onAppIconTileClicked(AppIconHelper.ICON_BLUE, getString(R.string.color_blue)));
+        }
+        if (_btnIconYellow != null) {
+            _btnIconYellow.setOnClickListener(v -> onAppIconTileClicked(AppIconHelper.ICON_YELLOW, getString(R.string.color_yellow)));
+        }
+
+        updateAppIconSelectionUI(AppIconHelper.getSelectedIcon(this));
+    }
+
+    private void onAppIconTileClicked(String colorKey, String colorName) {
+        String current = AppIconHelper.getSelectedIcon(this);
+        if (!current.equalsIgnoreCase(colorKey)) {
+            AppIconHelper.setAppIcon(this, colorKey);
+            AppIconHelper.applyTaskDescription(this);
+            updateAppIconSelectionUI(colorKey);
+            updateNotification();
+            AppToast.show(this, getString(R.string.icon_changed_toast, colorName));
+        }
+    }
+
+    private void updateAppIconSelectionUI(String activeKey) {
+        runOnUiThread(() -> {
+            updateSingleIconTile(_btnIconWhite, _textIconWhite, AppIconHelper.ICON_WHITE.equalsIgnoreCase(activeKey));
+            updateSingleIconTile(_btnIconBlack, _textIconBlack, AppIconHelper.ICON_BLACK.equalsIgnoreCase(activeKey));
+            updateSingleIconTile(_btnIconGrey, _textIconGrey, AppIconHelper.ICON_GREY.equalsIgnoreCase(activeKey));
+            updateSingleIconTile(_btnIconRed, _textIconRed, AppIconHelper.ICON_RED.equalsIgnoreCase(activeKey));
+            updateSingleIconTile(_btnIconBlue, _textIconBlue, AppIconHelper.ICON_BLUE.equalsIgnoreCase(activeKey));
+            updateSingleIconTile(_btnIconYellow, _textIconYellow, AppIconHelper.ICON_YELLOW.equalsIgnoreCase(activeKey));
+        });
+    }
+
+    private void updateSingleIconTile(View tile, TextView label, boolean isSelected) {
+        if (tile == null) return;
+        tile.setBackgroundResource(isSelected ? R.drawable.bg_icon_tile_selected : R.drawable.bg_icon_tile_unselected);
+        if (label != null) {
+            int colorRes = isSelected ? R.color.colorAccent : R.color.colorText;
+            label.setTextColor(ContextCompat.getColor(this, colorRes));
         }
     }
 
@@ -1117,7 +1209,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
                 long seconds = (durationMs / 1000) % 60;
                 setText(_sohTestResultDurationText, String.format(Locale.ENGLISH, getString(R.string.soh_test_samples_format), hours, minutes, seconds, _sohTestSampleCount));
             } else {
-                Toast.makeText(this, R.string.soh_test_not_enough_soc, Toast.LENGTH_LONG).show();
+                AppToast.show(this, R.string.soh_test_not_enough_soc, AppToast.LENGTH_LONG);
             }
         });
     }
@@ -1427,6 +1519,14 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
             }
         }
         try {
+            if (_notificationBuilder == null || _notificationManagerCompat == null) {
+                return;
+            }
+            int iconRes = AppIconHelper.getSelectedIconDrawableId(this);
+            Bitmap iconBitmap = AppIconHelper.getSelectedIconBitmap(this);
+            _notificationBuilder.setSmallIcon(iconRes);
+            _notificationBuilder.setLargeIcon(iconBitmap);
+
             if (_isSohTestRunning) {
                 _notificationBuilder.setContentText(String.format(Locale.ENGLISH, getString(R.string.notification_soh_test_format),
                         _sohTestTotalNetEnergyKwh, Math.max(0, _sohTestStartSoc - _soc), _power));
@@ -1620,7 +1720,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
 
     private void showAllCellsDialog() {
         if (_cellVoltages[0] <= 0.0 && _cellMinV <= 0.0) {
-            Toast.makeText(this, R.string.cells_no_data, Toast.LENGTH_SHORT).show();
+            AppToast.show(this, R.string.cells_no_data);
             return;
         }
 
@@ -1664,7 +1764,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
             }
         }
         if (!hasData && _batTempMin <= -50.0) {
-            Toast.makeText(this, R.string.module_temps_no_data, Toast.LENGTH_SHORT).show();
+            AppToast.show(this, R.string.module_temps_no_data);
             return;
         }
 
@@ -1860,7 +1960,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         _connectionText.setText(R.string.status_demo);
         _demoButton.setText(R.string.demo_button_stop);
         setText(_messageText, String.format(getString(R.string.update_time_demo_format), new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date())));
-        Toast.makeText(this, R.string.demo_active_toast, Toast.LENGTH_SHORT).show();
+        AppToast.show(this, R.string.demo_active_toast);
     }
 
     private void disableDemoMode() {
@@ -1915,7 +2015,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         setText(_batTempRangeText, getString(R.string.dash_placeholder));
         setText(_batTempDeltaText, getString(R.string.dash_placeholder));
         setText(_messageText, getString(R.string.messages));
-        Toast.makeText(this, R.string.demo_stopped_toast, Toast.LENGTH_SHORT).show();
+        AppToast.show(this, R.string.demo_stopped_toast);
     }
 
     @Override
@@ -1945,6 +2045,11 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         CanTrafficLogger.getInstance().stopLogging();
         if (_locationManager != null) {
             _locationManager.removeUpdates(this);
+        }
+        if (_notificationManagerCompat != null) {
+            try {
+                _notificationManagerCompat.cancel(NOTIFICATION_ID);
+            } catch (Exception ignored) {}
         }
         super.onDestroy();
     }

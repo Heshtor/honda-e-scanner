@@ -40,7 +40,7 @@ public class MainActivityViewModel extends AndroidViewModel {
             _bluetoothManager = BluetoothManager.getInstance();
             if (_bluetoothManager == null) {
                 // Bluetooth unavailable on this device :( tell the user
-                Toast.makeText(getApplication(), R.string.no_bluetooth, Toast.LENGTH_LONG).show();
+                AppToast.show(getApplication(), R.string.no_bluetooth, AppToast.LENGTH_LONG);
                 // Tell the activity there was an error and to close
                 return false;
             }

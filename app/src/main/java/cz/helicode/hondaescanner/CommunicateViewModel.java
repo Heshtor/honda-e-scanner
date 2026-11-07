@@ -231,7 +231,7 @@ public class CommunicateViewModel extends AndroidViewModel {
 
     // Helper method to create toast messages.
     private void toast(@StringRes int messageResource) {
-        Toast.makeText(getApplication(), messageResource, Toast.LENGTH_LONG).show();
+        AppToast.show(getApplication(), messageResource, AppToast.LENGTH_LONG);
         if (messageResource == R.string.message_send_error) {
             disconnect();
         }

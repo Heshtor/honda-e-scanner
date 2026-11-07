@@ -133,8 +133,8 @@
     <string name="height_phone_title">Altitude (GPS)</string>
     <string name="vin">Vehicle VIN code</string>
 
-    <string name="channel_name">Test Channel</string>
-    <string name="channel_description">Test Description</string>
+    <string name="channel_name">Battery &amp; Vehicle Status</string>
+    <string name="channel_description">Ongoing notification showing battery SoC and measurement status</string>
 
     <!-- Dynamic string resources for Java code -->
     <string name="can_connecting">Connecting to CAN bus...</string>
@@ -194,4 +194,15 @@
     <string name="dialog_label_max">Max:</string>
     <string name="dialog_label_delta">Delta (Δ):</string>
     <string name="dialog_module_format">Module %1$d:   %2$5.1f °C%3$s\n</string>
+
+    <!-- App Icon / Vehicle Color Settings -->
+    <string name="settings_icon_title">🎨 App Icon (Vehicle Color)</string>
+    <string name="settings_icon_desc">Choose an icon matching your Honda e color. The change will take effect on your home screen immediately.</string>
+    <string name="color_white">White</string>
+    <string name="color_black">Black</string>
+    <string name="color_grey">Grey</string>
+    <string name="color_red">Red</string>
+    <string name="color_blue">Blue</string>
+    <string name="color_yellow">Yellow</string>
+    <string name="icon_changed_toast">App icon changed to %1$s.</string>
 </resources>

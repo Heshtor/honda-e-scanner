@@ -1697,7 +1697,259 @@
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
-                <!-- 5. ABOUT APPLICATION & CREDITS CARD -->
+                <!-- 5. APP ICON / VEHICLE COLOR CARD -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:cardBackgroundColor="@color/colorCard"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="14dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="6dp"
+                            android:text="@string/settings_icon_title"
+                            android:textColor="@color/colorAccent"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="12dp"
+                            android:text="@string/settings_icon_desc"
+                            android:textColor="@color/colorTextSecondary"
+                            android:textSize="13sp" />
+
+                        <!-- Grid Row 1: White, Black, Grey -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <!-- White -->
+                            <LinearLayout
+                                android:id="@+id/btn_icon_white"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="5dp"
+                                android:background="@drawable/bg_icon_tile_unselected"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:gravity="center"
+                                android:orientation="vertical"
+                                android:padding="10dp">
+
+                                <ImageView
+                                    android:layout_width="52dp"
+                                    android:layout_height="52dp"
+                                    android:adjustViewBounds="true"
+                                    android:contentDescription="@string/color_white"
+                                    android:src="@mipmap/logo_white" />
+
+                                <TextView
+                                    android:id="@+id/text_icon_white"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="6dp"
+                                    android:gravity="center"
+                                    android:text="@string/color_white"
+                                    android:textColor="@color/colorText"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <!-- Black -->
+                            <LinearLayout
+                                android:id="@+id/btn_icon_black"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="3dp"
+                                android:layout_marginEnd="3dp"
+                                android:background="@drawable/bg_icon_tile_unselected"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:gravity="center"
+                                android:orientation="vertical"
+                                android:padding="10dp">
+
+                                <ImageView
+                                    android:layout_width="52dp"
+                                    android:layout_height="52dp"
+                                    android:adjustViewBounds="true"
+                                    android:contentDescription="@string/color_black"
+                                    android:src="@mipmap/logo_black" />
+
+                                <TextView
+                                    android:id="@+id/text_icon_black"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="6dp"
+                                    android:gravity="center"
+                                    android:text="@string/color_black"
+                                    android:textColor="@color/colorText"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <!-- Grey -->
+                            <LinearLayout
+                                android:id="@+id/btn_icon_grey"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="5dp"
+                                android:background="@drawable/bg_icon_tile_unselected"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:gravity="center"
+                                android:orientation="vertical"
+                                android:padding="10dp">
+
+                                <ImageView
+                                    android:layout_width="52dp"
+                                    android:layout_height="52dp"
+                                    android:adjustViewBounds="true"
+                                    android:contentDescription="@string/color_grey"
+                                    android:src="@mipmap/logo_grey" />
+
+                                <TextView
+                                    android:id="@+id/text_icon_grey"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="6dp"
+                                    android:gravity="center"
+                                    android:text="@string/color_grey"
+                                    android:textColor="@color/colorText"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                        <!-- Grid Row 2: Red, Blue, Yellow -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:orientation="horizontal">
+
+                            <!-- Red -->
+                            <LinearLayout
+                                android:id="@+id/btn_icon_red"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="5dp"
+                                android:background="@drawable/bg_icon_tile_unselected"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:gravity="center"
+                                android:orientation="vertical"
+                                android:padding="10dp">
+
+                                <ImageView
+                                    android:layout_width="52dp"
+                                    android:layout_height="52dp"
+                                    android:adjustViewBounds="true"
+                                    android:contentDescription="@string/color_red"
+                                    android:src="@mipmap/logo_red" />
+
+                                <TextView
+                                    android:id="@+id/text_icon_red"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="6dp"
+                                    android:gravity="center"
+                                    android:text="@string/color_red"
+                                    android:textColor="@color/colorText"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <!-- Blue -->
+                            <LinearLayout
+                                android:id="@+id/btn_icon_blue"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="3dp"
+                                android:layout_marginEnd="3dp"
+                                android:background="@drawable/bg_icon_tile_unselected"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:gravity="center"
+                                android:orientation="vertical"
+                                android:padding="10dp">
+
+                                <ImageView
+                                    android:layout_width="52dp"
+                                    android:layout_height="52dp"
+                                    android:adjustViewBounds="true"
+                                    android:contentDescription="@string/color_blue"
+                                    android:src="@mipmap/logo_blue" />
+
+                                <TextView
+                                    android:id="@+id/text_icon_blue"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="6dp"
+                                    android:gravity="center"
+                                    android:text="@string/color_blue"
+                                    android:textColor="@color/colorText"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <!-- Yellow -->
+                            <LinearLayout
+                                android:id="@+id/btn_icon_yellow"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="5dp"
+                                android:background="@drawable/bg_icon_tile_unselected"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:gravity="center"
+                                android:orientation="vertical"
+                                android:padding="10dp">
+
+                                <ImageView
+                                    android:layout_width="52dp"
+                                    android:layout_height="52dp"
+                                    android:adjustViewBounds="true"
+                                    android:contentDescription="@string/color_yellow"
+                                    android:src="@mipmap/logo_yellow" />
+
+                                <TextView
+                                    android:id="@+id/text_icon_yellow"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="6dp"
+                                    android:gravity="center"
+                                    android:text="@string/color_yellow"
+                                    android:textColor="@color/colorText"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- 6. ABOUT APPLICATION & CREDITS CARD -->
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
