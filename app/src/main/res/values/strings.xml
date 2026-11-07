@@ -72,6 +72,10 @@
     <string name="settings_demo_desc">Populates the app with sample vehicle values to test the user interface and calculations without connecting to a car.</string>
     <string name="settings_log_title">Diagnostic CAN Log</string>
     <string name="settings_log_desc">Records CAN bus communication into a file. You can export and share the log for diagnosis or troubleshooting.</string>
+    <string name="settings_log_status_title">Communication log available for sharing:</string>
+    <string name="settings_log_status_recording">🔴 Recording in progress: %1$s (%2$s)</string>
+    <string name="settings_log_status_saved">%1$s (%2$s)</string>
+    <string name="settings_log_none">No log available</string>
     <string name="settings_language_title">App Language</string>
     <string name="settings_language_desc">Select your preferred user interface language.</string>
     <string name="lang_czech">Čeština</string>

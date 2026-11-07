@@ -164,6 +164,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
     private RadioGroup _settingsLanguageGroup, _settingsThemeGroup;
     private RadioButton _settingsLangCs, _settingsLangEn;
     private RadioButton _settingsThemeDark, _settingsThemeLight, _settingsThemeSystem;
+    private TextView _logStatusText;
 
     // Battery SoH Test Mode
     private TextView _sohTestStatusText;
@@ -324,6 +325,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         _connectButton = findViewById(R.id.communicate_connect);
         _demoButton = findViewById(R.id.communicate_demo);
         _shareLogButton = findViewById(R.id.communicate_share_log);
+        _logStatusText = findViewById(R.id.communicate_log_status);
 
         if (_demoButton != null) {
             _demoButton.setOnClickListener(v -> toggleDemoMode());
@@ -331,6 +333,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         if (_shareLogButton != null) {
             _shareLogButton.setOnClickListener(v -> handleShareLog());
         }
+        updateLogStatusUI();
 
         // Navigation Tabs
         _containerLiveData = findViewById(R.id.container_live_data);
@@ -515,6 +518,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
     protected void onResume() {
         super.onResume();
         ThemeHelper.applyTheme(this);
+        updateLogStatusUI();
     }
 
     private void selectTab(int tabIndex) {
@@ -547,11 +551,49 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         if (_tabSettingsIndicator != null) {
             _tabSettingsIndicator.setBackgroundColor(ContextCompat.getColor(this, tabIndex == 2 ? R.color.colorAccent : android.R.color.transparent));
         }
+
+        if (tabIndex == 2) {
+            updateLogStatusUI();
+        }
+    }
+
+    private void updateLogStatusUI() {
+        runOnUiThread(() -> {
+            if (_logStatusText == null) return;
+            CanTrafficLogger.LogInfo info = CanTrafficLogger.getInstance().getLogInfo(this);
+            if (info.exists) {
+                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                String dateStr = (info.startDate != null) ? df.format(info.startDate) : "---";
+                String sizeStr = info.getFormattedSize();
+
+                if (info.isRecording) {
+                    _logStatusText.setText(getString(R.string.settings_log_status_recording, dateStr, sizeStr));
+                    _logStatusText.setTextColor(ContextCompat.getColor(this, R.color.colorRegen));
+                } else {
+                    _logStatusText.setText(getString(R.string.settings_log_status_saved, dateStr, sizeStr));
+                    _logStatusText.setTextColor(ContextCompat.getColor(this, R.color.colorText));
+                }
+                if (_shareLogButton != null) {
+                    _shareLogButton.setEnabled(true);
+                    _shareLogButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.colorAccent)));
+                    _shareLogButton.setTextColor(ContextCompat.getColor(this, R.color.colorBtnText));
+                }
+            } else {
+                _logStatusText.setText(R.string.settings_log_none);
+                _logStatusText.setTextColor(ContextCompat.getColor(this, R.color.colorTextSecondary));
+                if (_shareLogButton != null) {
+                    _shareLogButton.setEnabled(false);
+                    _shareLogButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.colorHighlight)));
+                    _shareLogButton.setTextColor(ContextCompat.getColor(this, R.color.colorTextSecondary));
+                }
+            }
+        });
     }
 
     private void handleShareLog() {
         try {
             Uri uri = CanTrafficLogger.getInstance().getShareUri(this);
+            updateLogStatusUI();
             if (uri == null) {
                 Toast.makeText(this, R.string.no_log_to_export, Toast.LENGTH_SHORT).show();
                 return;
@@ -649,6 +691,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
     private void connectCAN() {
         try {
             CanTrafficLogger.getInstance().startLogging(this, _vin);
+            updateLogStatusUI();
             setText(_messageText, getString(R.string.can_connecting));
 
             for (String command : _connectionCommands) {
@@ -1732,6 +1775,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
                     _viewModel.connect();
                 });
                 CanTrafficLogger.getInstance().stopLogging();
+                updateLogStatusUI();
                 _retries = 0;
                 break;
 

@@ -72,6 +72,10 @@
     <string name="settings_demo_desc">Vyplní aplikaci vzorovými hodnotami pro otestování rozhraní a výpočtů bez nutnosti připojení k vozu.</string>
     <string name="settings_log_title">Diagnostický záznam (CAN Log)</string>
     <string name="settings_log_desc">Zaznamenává komunikaci po CAN sběrnici do souboru. Log můžete exportovat a sdílet pro diagnostiku nebo řešení potíží.</string>
+    <string name="settings_log_status_title">Dostupný záznam ke sdílení:</string>
+    <string name="settings_log_status_recording">🔴 Probíhá záznam od %1$s (%2$s)</string>
+    <string name="settings_log_status_saved">%1$s (%2$s)</string>
+    <string name="settings_log_none">Žádný záznam k dispozici</string>
     <string name="settings_language_title">Jazyk aplikace / Language</string>
     <string name="settings_language_desc">Vyberte preferovaný jazyk uživatelského rozhraní.</string>
     <string name="lang_czech">Čeština</string>
