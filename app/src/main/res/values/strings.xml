@@ -97,7 +97,8 @@
     <string name="soh_test_elapsed_time_title">Elapsed time</string>
     <string name="soh_test_samples_title">Sample count</string>
     <string name="soh_test_live_energy_title">Net Energy Consumed</string>
-    <string name="soh_test_live_distance_title">Distance Traveled</string>
+    <string name="soh_test_live_deltasoc_title">Charge decrease (Δ SoC)</string>
+    <string name="soh_test_live_distance_title">Distance driven (GPS / ODO)</string>
     <string name="soh_test_power_title">Instant power</string>
     <string name="soh_test_discharge_regen_title">Discharged / Regenerated</string>
     <string name="soh_test_status_finalizing">Finalizing and evaluating test…</string>
@@ -108,7 +109,7 @@
     <string name="soh_test_result_cnetto_title">Usable net capacity</string>
     <string name="soh_test_result_deltasoc_title">Charge decrease (Δ SoC)</string>
     <string name="soh_test_result_energy_title">Net energy consumed</string>
-    <string name="soh_test_result_distance_title">Distance driven</string>
+    <string name="soh_test_result_distance_title">Distance driven (GPS / ODO)</string>
     <string name="soh_test_result_consumption_title">Average consumption during test</string>
     <string name="soh_test_result_duration_title">Test duration</string>
     <string name="soh_test_locked_toast">SoH measurement is active. Stop test before switching tabs.</string>
@@ -158,17 +159,35 @@
     <string name="dash_placeholder">---</string>
     <string name="speed_unit_placeholder">--- km/h</string>
     <string name="motor_rpm_placeholder">--- RPM</string>
-    <string name="gear_placeholder">---</string>
-    <string name="temp_placeholder" tools:ignore="TypographyDashes">--.-°C</string>
+    <string name="gear_placeholder">--- / ---</string>
+    <string name="temp_placeholder" tools:ignore="TypographyDashes">--- °C</string>
+    <string name="temp_range_placeholder" tools:ignore="TypographyDashes">--- °C / --- °C</string>
+    <string name="temp_delta_placeholder" tools:ignore="TypographyDashes">--- °C</string>
     <string name="range_placeholder" tools:ignore="TypographyDashes">--- km</string>
-    <string name="soc_placeholder" tools:ignore="TypographyDashes">--.-- %</string>
-    <string name="remaining_energy_placeholder" tools:ignore="TypographyDashes">--.- kWh</string>
+    <string name="soc_placeholder" tools:ignore="TypographyDashes">--- %</string>
+    <string name="soc_range_placeholder" tools:ignore="TypographyDashes">--- % / --- %</string>
+    <string name="soc_delta_placeholder" tools:ignore="TypographyDashes">--- %</string>
+    <string name="soh_placeholder" tools:ignore="TypographyDashes">--- % (--- Ah)</string>
+    <string name="remaining_energy_placeholder" tools:ignore="TypographyDashes">--- kWh</string>
     <string name="kw_placeholder" tools:ignore="TypographyDashes">--- kW</string>
-    <string name="amp_placeholder" tools:ignore="TypographyDashes">--.-- A</string>
-    <string name="volt_placeholder" tools:ignore="TypographyDashes">---.- V</string>
-    <string name="ambient_temp_placeholder" tools:ignore="TypographyDashes">--.- °C</string>
-    <string name="aux_bat_placeholder" tools:ignore="TypographyDashes">--.- V</string>
+    <string name="live_power_placeholder" tools:ignore="TypographyDashes">--- kW (--- A, --- V)</string>
+    <string name="consumption_placeholder" tools:ignore="TypographyDashes">--- kWh/100km (---)</string>
+    <string name="soh_test_result_consumption_placeholder" tools:ignore="TypographyDashes">--- kWh/100km</string>
+    <string name="soh_test_live_energy_placeholder" tools:ignore="TypographyDashes">0.00 kWh (+0.00 / -0.00)</string>
+    <string name="soh_test_live_time_placeholder">00:00:00</string>
+    <string name="soh_test_live_samples_placeholder">0</string>
+    <string name="soh_test_live_deltasoc_placeholder" tools:ignore="TypographyDashes">0.00 %</string>
+    <string name="soh_test_live_distance_placeholder" tools:ignore="TypographyDashes">0.0 km / 0 km</string>
+    <string name="amp_placeholder" tools:ignore="TypographyDashes">--- A</string>
+    <string name="volt_placeholder" tools:ignore="TypographyDashes">--- V</string>
+    <string name="battery_voltage_placeholder" tools:ignore="TypographyDashes">--- V (--- V/cell)</string>
+    <string name="cell_volt_placeholder" tools:ignore="TypographyDashes">--- V / --- V</string>
+    <string name="cell_delta_placeholder" tools:ignore="TypographyDashes">--- mV</string>
+    <string name="ambient_temp_placeholder" tools:ignore="TypographyDashes">--- °C</string>
+    <string name="aux_bat_placeholder" tools:ignore="TypographyDashes">--- V (---)</string>
     <string name="odo_placeholder" tools:ignore="TypographyDashes">--- km</string>
+    <string name="elevation_placeholder" tools:ignore="TypographyDashes">--- m</string>
+    <string name="discharge_regen_placeholder" tools:ignore="TypographyDashes">--- kWh / --- kWh</string>
     <!-- About & Credits -->
     <string name="settings_about_title">ℹ️ About Application</string>
     <string name="settings_about_desc">Diagnostic tool and battery monitor developed for the Honda e electric vehicle.</string>

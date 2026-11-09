@@ -153,7 +153,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="monospace"
                                 android:gravity="end"
-                                android:text="@string/dash_placeholder"
+                                android:text="@string/soc_range_placeholder"
                                 android:textColor="@color/colorText"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -180,7 +180,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="monospace"
                                 android:gravity="end"
-                                android:text="@string/dash_placeholder"
+                                android:text="@string/soc_delta_placeholder"
                                 android:textColor="@color/colorText"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -207,7 +207,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="monospace"
                                 android:gravity="end"
-                                android:text="@string/dash_placeholder"
+                                android:text="@string/cell_volt_placeholder"
                                 android:textColor="@color/colorText"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -234,7 +234,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="monospace"
                                 android:gravity="end"
-                                android:text="@string/dash_placeholder"
+                                android:text="@string/cell_delta_placeholder"
                                 android:textColor="@color/colorText"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -275,7 +275,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="monospace"
                                 android:gravity="end"
-                                android:text="@string/soc_placeholder"
+                                android:text="@string/soh_placeholder"
                                 android:textColor="@color/colorText"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -408,7 +408,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="monospace"
                                 android:gravity="end"
-                                android:text="@string/dash_placeholder"
+                                android:text="@string/kw_placeholder"
                                 android:textColor="@color/colorText"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -462,7 +462,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="monospace"
                                 android:gravity="end"
-                                android:text="@string/dash_placeholder"
+                                android:text="@string/consumption_placeholder"
                                 android:textColor="@color/colorText"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -515,7 +515,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="monospace"
                                 android:gravity="end"
-                                android:text="@string/volt_placeholder"
+                                android:text="@string/battery_voltage_placeholder"
                                 android:textColor="@color/colorText"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -596,7 +596,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="monospace"
                                 android:gravity="end"
-                                android:text="@string/dash_placeholder"
+                                android:text="@string/temp_range_placeholder"
                                 android:textColor="@color/colorText"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -623,7 +623,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="monospace"
                                 android:gravity="end"
-                                android:text="@string/dash_placeholder"
+                                android:text="@string/temp_delta_placeholder"
                                 android:textColor="@color/colorText"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -804,33 +804,6 @@
                                 android:textStyle="bold" />
                         </LinearLayout>
 
-                        <!-- Row: Motor RPM -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="8dp"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:layout_marginEnd="8dp"
-                                android:text="@string/motor_rpm"
-                                android:textColor="@color/colorTextSecondary" />
-
-                            <TextView
-                                android:id="@+id/communicate_motor_rpm"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="monospace"
-                                android:gravity="end"
-                                android:text="@string/motor_rpm_placeholder"
-                                android:textColor="@color/colorText"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-
                         <!-- Row: Gear / Direction -->
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -874,22 +847,33 @@
                                 android:text="@string/location_phone_title"
                                 android:textColor="@color/colorTextSecondary" />
 
-                            <TextView
-                                android:id="@+id/communicate_lat"
+                            <LinearLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:fontFamily="monospace"
-                                android:textColor="@color/colorText"
-                                android:textStyle="bold" />
+                                android:gravity="end"
+                                android:orientation="vertical">
 
-                            <TextView
-                                android:id="@+id/communicate_lon"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="6dp"
-                                android:fontFamily="monospace"
-                                android:textColor="@color/colorText"
-                                android:textStyle="bold" />
+                                <TextView
+                                    android:id="@+id/communicate_lat"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="monospace"
+                                    android:gravity="end"
+                                    android:text="@string/dash_placeholder"
+                                    android:textColor="@color/colorText"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/communicate_lon"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:fontFamily="monospace"
+                                    android:gravity="end"
+                                    android:text="@string/dash_placeholder"
+                                    android:textColor="@color/colorText"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
                         </LinearLayout>
 
                         <!-- Row: Elevation (Phone GPS) -->
@@ -914,7 +898,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="monospace"
                                 android:gravity="end"
-                                android:text="@string/dash_placeholder"
+                                android:text="@string/elevation_placeholder"
                                 android:textColor="@color/colorText"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -1059,7 +1043,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="monospace"
                                 android:gravity="end"
-                                android:text="00:00:00"
+                                android:text="@string/soh_test_live_time_placeholder"
                                 android:textColor="@color/colorText"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -1086,7 +1070,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="monospace"
                                 android:gravity="end"
-                                android:text="0"
+                                android:text="@string/soh_test_live_samples_placeholder"
                                 android:textColor="@color/colorText"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -1113,7 +1097,34 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="monospace"
                                 android:gravity="end"
-                                android:text="0.00 kWh"
+                                android:text="@string/soh_test_live_energy_placeholder"
+                                android:textColor="@color/colorText"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <!-- Row: Live Delta SoC (Charge decrease) -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="8dp"
+                                android:text="@string/soh_test_live_deltasoc_title"
+                                android:textColor="@color/colorTextSecondary" />
+
+                            <TextView
+                                android:id="@+id/soh_test_live_deltasoc"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="monospace"
+                                android:gravity="end"
+                                android:text="@string/soh_test_live_deltasoc_placeholder"
                                 android:textColor="@color/colorText"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -1140,7 +1151,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="monospace"
                                 android:gravity="end"
-                                android:text="0.0 km"
+                                android:text="@string/soh_test_live_distance_placeholder"
                                 android:textColor="@color/colorText"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -1166,7 +1177,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="monospace"
                                 android:gravity="end"
-                                android:text="@string/dash_placeholder"
+                                android:text="@string/live_power_placeholder"
                                 android:textColor="@color/colorText"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -1332,7 +1343,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="monospace"
                                 android:gravity="end"
-                                android:text="@string/dash_placeholder"
+                                android:text="@string/discharge_regen_placeholder"
                                 android:textColor="@color/colorText"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -1359,7 +1370,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="monospace"
                                 android:gravity="end"
-                                android:text="@string/dash_placeholder"
+                                android:text="@string/odo_placeholder"
                                 android:textColor="@color/colorText"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -1386,7 +1397,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="monospace"
                                 android:gravity="end"
-                                android:text="@string/dash_placeholder"
+                                android:text="@string/soh_test_result_consumption_placeholder"
                                 android:textColor="@color/colorText"
                                 android:textStyle="bold" />
                         </LinearLayout>
