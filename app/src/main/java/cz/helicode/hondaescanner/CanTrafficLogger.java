@@ -27,17 +27,18 @@ import java.util.Locale;
 
 /**
  * Diagnostic CAN/OBD traffic logger.
- * Continuously records raw CAN communication into a single live file (Honda_e_live.log).
- * Reclaims disk space by overwriting on new vehicle connections and avoiding unneeded file clones.
+ * Automatically clears the can_log folder and creates a timestamped log file
+ * upon each vehicle connection session.
  */
 public class CanTrafficLogger {
 
     private static final String TAG = "CanTrafficLogger";
     private static final CanTrafficLogger INSTANCE = new CanTrafficLogger();
 
-    public static final String LIVE_LOG_FILENAME = "Honda_e_live.log";
+    public static final String DIR_NAME = "can_log";
     private static final String PREFS_NAME = "can_traffic_logger_prefs";
     private static final String KEY_LOG_START_TIME = "log_start_time_ms";
+    private static final String KEY_CURRENT_LOG_FILE = "current_log_filename";
 
     private PrintWriter _writer;
     private File _currentLogFile;
@@ -51,10 +52,10 @@ public class CanTrafficLogger {
 
     private CanTrafficLogger() {}
 
-    private File getBaseDir(Context context) {
-        File baseDir = context.getExternalFilesDir("can_logs");
+    public File getBaseDir(Context context) {
+        File baseDir = context.getExternalFilesDir(DIR_NAME);
         if (baseDir == null) {
-            baseDir = context.getFilesDir();
+            baseDir = new File(context.getFilesDir(), DIR_NAME);
         }
         if (!baseDir.exists()) {
             //noinspection ResultOfMethodCallIgnored
@@ -63,29 +64,85 @@ public class CanTrafficLogger {
         return baseDir;
     }
 
-    public File getLiveLogFile(Context context) {
-        return new File(getBaseDir(context), LIVE_LOG_FILENAME);
+    /**
+     * Resolves the current or latest session log file in the can_log directory.
+     */
+    public synchronized File getLogFile(Context context) {
+        if (_currentLogFile != null && _currentLogFile.exists() && _currentLogFile.length() > 0) {
+            return _currentLogFile;
+        }
+
+        File baseDir = getBaseDir(context);
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String savedFilename = prefs.getString(KEY_CURRENT_LOG_FILE, null);
+        if (savedFilename != null) {
+            File savedFile = new File(baseDir, savedFilename);
+            if (savedFile.exists() && savedFile.length() > 0) {
+                _currentLogFile = savedFile;
+                return _currentLogFile;
+            }
+        }
+
+        File[] files = baseDir.listFiles((dir, name) -> name.endsWith(".log"));
+        if (files != null && files.length > 0) {
+            File newest = files[0];
+            for (File f : files) {
+                if (f.lastModified() > newest.lastModified()) {
+                    newest = f;
+                }
+            }
+            if (newest.length() > 0) {
+                _currentLogFile = newest;
+                return _currentLogFile;
+            }
+        }
+
+        return null;
     }
 
+    @Deprecated
+    public File getLiveLogFile(Context context) {
+        return getLogFile(context);
+    }
+
+    /**
+     * Wipes all existing files in can_log and starts recording into a new timestamped log file.
+     */
     public synchronized void startLogging(Context context, String vin) {
         try {
             if (_writer != null) {
-                return;
+                try {
+                    _writer.flush();
+                    _writer.close();
+                } catch (Exception ignored) {}
+                _writer = null;
             }
 
             File baseDir = getBaseDir(context);
-            _currentLogFile = new File(baseDir, LIVE_LOG_FILENAME);
+
+            // Wipe entire contents of can_log folder before starting new log
+            File[] existingFiles = baseDir.listFiles();
+            if (existingFiles != null) {
+                for (File file : existingFiles) {
+                    //noinspection ResultOfMethodCallIgnored
+                    file.delete();
+                }
+            }
 
             Date now = new Date();
             _currentLogStartDate = now;
 
-            // Save start time to SharedPreferences so it persists across app restarts / crashes
+            String filename = "Honda_e_" + _fileDateFormat.format(now) + ".log";
+            _currentLogFile = new File(baseDir, filename);
+
             SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-            prefs.edit().putLong(KEY_LOG_START_TIME, now.getTime()).apply();
+            prefs.edit()
+                    .putLong(KEY_LOG_START_TIME, now.getTime())
+                    .putString(KEY_CURRENT_LOG_FILE, filename)
+                    .apply();
 
             String safeVin = (vin != null && !vin.isEmpty() && !vin.equals("HONDA_E")) ? vin : "HONDA_E";
 
-            // Overwrite Honda_e_live.log from scratch (append = false)
             _writer = new PrintWriter(new FileWriter(_currentLogFile, false), true);
             _writer.println("================================================================================");
             _writer.println("Honda e Scanner - CAN & OBD Diagnostic Communication Log");
@@ -133,7 +190,6 @@ public class CanTrafficLogger {
             _writer.flush();
             _writer.close();
             _writer = null;
-            // Note: Honda_e_live.log is NOT renamed. It remains intact for sharing until the next vehicle connection.
         }
     }
 
@@ -142,14 +198,30 @@ public class CanTrafficLogger {
     }
 
     public synchronized boolean hasActiveLog(Context context) {
-        File live = getLiveLogFile(context);
-        return live.exists() && live.length() > 0;
+        File log = getLogFile(context);
+        return log != null && log.exists() && log.length() > 0;
     }
 
-    public Date getLogStartDate(Context context, File liveFile) {
+    public Date getLogStartDate(Context context, File logFile) {
         if (_currentLogStartDate != null) {
             return _currentLogStartDate;
         }
+
+        // Try extracting timestamp from filename "Honda_e_yyyy-MM-dd_HH-mm-ss.log"
+        if (logFile != null) {
+            String name = logFile.getName();
+            if (name.startsWith("Honda_e_") && name.endsWith(".log")) {
+                try {
+                    String datePart = name.substring("Honda_e_".length(), name.length() - ".log".length());
+                    Date parsedName = _fileDateFormat.parse(datePart);
+                    if (parsedName != null) {
+                        _currentLogStartDate = parsedName;
+                        return _currentLogStartDate;
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         long startMs = prefs.getLong(KEY_LOG_START_TIME, 0L);
         if (startMs > 0) {
@@ -157,9 +229,8 @@ public class CanTrafficLogger {
             return _currentLogStartDate;
         }
 
-        // Fallback: Try reading start time from file header
-        if (liveFile != null && liveFile.exists()) {
-            try (BufferedReader reader = new BufferedReader(new FileReader(liveFile))) {
+        if (logFile != null && logFile.exists()) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(logFile))) {
                 String line;
                 int count = 0;
                 while ((line = reader.readLine()) != null && count < 6) {
@@ -176,7 +247,7 @@ public class CanTrafficLogger {
                 }
             } catch (Exception ignored) {
             }
-            return new Date(liveFile.lastModified());
+            return new Date(logFile.lastModified());
         }
 
         return new Date();
@@ -207,47 +278,37 @@ public class CanTrafficLogger {
     }
 
     public synchronized LogInfo getLogInfo(Context context) {
-        File live = getLiveLogFile(context);
-        boolean exists = live.exists() && live.length() > 0;
+        if (_writer != null) {
+            _writer.flush();
+        }
+        File logFile = getLogFile(context);
+        boolean exists = (logFile != null && logFile.exists() && logFile.length() > 0);
         boolean isRecording = (_writer != null);
         if (!exists) {
             return new LogInfo(false, isRecording, null, 0);
         }
-        Date start = getLogStartDate(context, live);
-        return new LogInfo(true, isRecording, start, live.length());
+        Date start = getLogStartDate(context, logFile);
+        return new LogInfo(true, isRecording, start, logFile.length());
     }
 
     public synchronized Uri getShareUri(Context context) {
         if (_writer != null) {
             _writer.flush();
         }
-        File liveFile = getLiveLogFile(context);
-        if (!liveFile.exists() || liveFile.length() == 0) {
+        File logFile = getLogFile(context);
+        if (logFile == null || !logFile.exists() || logFile.length() == 0) {
             return null;
-        }
-
-        Date startDate = getLogStartDate(context, liveFile);
-        File baseDir = getBaseDir(context);
-        String exportName = "Honda_e_" + _fileDateFormat.format(startDate) + ".log";
-        File exportFile = new File(baseDir, exportName);
-
-        File fileToShare = liveFile;
-        try {
-            copyFile(liveFile, exportFile);
-            fileToShare = exportFile;
-        } catch (IOException e) {
-            Log.e(TAG, "Error copying log for share", e);
         }
 
         return FileProvider.getUriForFile(
                 context,
                 context.getPackageName() + ".fileprovider",
-                fileToShare
+                logFile
         );
     }
 
     /**
-     * Copies the active log file to the public Downloads folder with the log's start date.
+     * Copies the active log file to the public Downloads folder.
      * @return Path or descriptive target location for displaying in a message.
      */
     @SuppressWarnings("unused")
@@ -255,13 +316,12 @@ public class CanTrafficLogger {
         if (_writer != null) {
             _writer.flush();
         }
-        File liveFile = getLiveLogFile(context);
-        if (!liveFile.exists() || liveFile.length() == 0) {
+        File logFile = getLogFile(context);
+        if (logFile == null || !logFile.exists() || logFile.length() == 0) {
             throw new IOException("No CAN log file recorded yet.");
         }
 
-        Date startDate = getLogStartDate(context, liveFile);
-        String exportName = "Honda_e_" + _fileDateFormat.format(startDate) + ".log";
+        String exportName = logFile.getName();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ContentValues values = new ContentValues();
@@ -273,7 +333,7 @@ public class CanTrafficLogger {
             if (uri == null) {
                 throw new IOException("MediaStore could not create file in Downloads.");
             }
-            try (InputStream in = new FileInputStream(liveFile);
+            try (InputStream in = new FileInputStream(logFile);
                  OutputStream out = context.getContentResolver().openOutputStream(uri)) {
                 if (out == null) throw new IOException("Cannot open output stream for writing file.");
                 byte[] buffer = new byte[8192];
@@ -292,7 +352,7 @@ public class CanTrafficLogger {
                 targetDir.mkdirs();
             }
             File targetFile = new File(targetDir, exportName);
-            try (InputStream in = new FileInputStream(liveFile);
+            try (InputStream in = new FileInputStream(logFile);
                  OutputStream out = new FileOutputStream(targetFile)) {
                 byte[] buffer = new byte[8192];
                 int read;
@@ -302,18 +362,6 @@ public class CanTrafficLogger {
                 out.flush();
             }
             return targetFile.getAbsolutePath();
-        }
-    }
-
-    private void copyFile(File src, File dst) throws IOException {
-        try (InputStream in = new FileInputStream(src);
-             OutputStream out = new FileOutputStream(dst)) {
-            byte[] buffer = new byte[8192];
-            int read;
-            while ((read = in.read(buffer)) != -1) {
-                out.write(buffer, 0, read);
-            }
-            out.flush();
         }
     }
 }
