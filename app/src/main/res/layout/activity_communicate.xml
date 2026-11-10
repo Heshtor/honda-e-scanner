@@ -1289,7 +1289,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="monospace"
                                 android:gravity="end"
-                                android:text="@string/dash_placeholder"
+                                android:text="@string/soh_test_result_deltasoc_placeholder"
                                 android:textColor="@color/colorText"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -1370,7 +1370,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="monospace"
                                 android:gravity="end"
-                                android:text="@string/odo_placeholder"
+                                android:text="@string/soh_test_result_distance_placeholder"
                                 android:textColor="@color/colorText"
                                 android:textStyle="bold" />
                         </LinearLayout>

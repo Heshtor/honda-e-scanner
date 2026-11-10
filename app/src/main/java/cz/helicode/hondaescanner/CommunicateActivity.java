@@ -201,8 +201,10 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
     private int _sohTestSampleCount = 0;
     private int _sohTestCycleCounter = 0;
     private PowerManager.WakeLock _wakeLock = null;
-    private Handler _demoSohHandler = null;
-    private Runnable _demoSohRunnable = null;
+    private Handler _demoLoopHandler = null;
+    private Runnable _demoLoopRunnable = null;
+    private int _demoTickCounter = 0;
+    private double _demoSimulatedDistanceKm = 0.0;
 
     // Telemetry variables
     private double _soc, _socMin, _socMax, _socDelta, _soh, _capacityAh;
@@ -903,9 +905,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         if (!_carConnected && !_isDemoMode) {
             return getString(R.string.gear_placeholder);
         }
-        if (_chargingConnection != ChargingConnection.NC || _isCharging) {
-            return getString(R.string.gear_charging);
-        } else if (_motorRpm > 50 || _speed > 2.0) {
+        if (_motorRpm > 50 || _speed > 2.0) {
             return getString(R.string.gear_drive);
         } else if (_motorRpm < -50) {
             return getString(R.string.gear_reverse);
@@ -1097,17 +1097,14 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         });
 
         if (_isDemoMode) {
-            startDemoSohSimulation();
+            if (_demoLoopHandler != null && _demoLoopRunnable != null) {
+                _demoLoopHandler.removeCallbacks(_demoLoopRunnable);
+                _demoLoopHandler.post(_demoLoopRunnable);
+            }
         }
     }
 
     private void stopSohTest() {
-        if (_demoSohHandler != null && _demoSohRunnable != null) {
-            _demoSohHandler.removeCallbacks(_demoSohRunnable);
-            _demoSohHandler = null;
-            _demoSohRunnable = null;
-        }
-
         if (_wakeLock != null && _wakeLock.isHeld()) {
             _wakeLock.release();
         }
@@ -1246,60 +1243,209 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         });
     }
 
-    private void startDemoSohSimulation() {
-        _demoSohHandler = new Handler(Looper.getMainLooper());
-        _demoSohRunnable = new Runnable() {
+    private void startDemoSimulationLoop() {
+        stopDemoSimulationLoop();
+        _demoTickCounter = 0;
+        _demoSimulatedDistanceKm = 0.0;
+        _demoLoopHandler = new Handler(Looper.getMainLooper());
+        _demoLoopRunnable = new Runnable() {
             @Override
             public void run() {
-                if (!_isSohTestRunning) return;
+                if (!_isDemoMode) return;
 
-                double currentAmp;
-                if ((_sohTestSampleCount % 20) >= 16) {
-                    // Periodic regenerative braking phase (green power, -16 to -25 kW)
-                    currentAmp = -(45.0 + Math.random() * 25.0);
+                _demoTickCounter++;
+                if (_isSohTestRunning) {
+                    stepDemoSohSimulation();
                 } else {
-                    // Acceleration / cruising phase (normal power color, +41 to +55 kW)
-                    currentAmp = 115.0 + (Math.random() * 35.0);
-                }
-                _volt = 360.0 + (Math.random() * 6.0);
-                _amp = currentAmp;
-                _power = Math.round((_volt * _amp / 1000.0) * 100.0) / 100.0;
-
-                double dtSeconds = 0.4;
-                double deltaKwh = (_power * 1000.0 * dtSeconds) / 3600000.0;
-                _sohTestTotalNetEnergyKwh += deltaKwh;
-                if (deltaKwh > 0) {
-                    _sohTestTotalDischargeKwh += deltaKwh;
-                } else {
-                    _sohTestTotalRegenKwh += Math.abs(deltaKwh);
-                }
-                _sohTestSampleCount++;
-
-                // Faster, responsive demo distance progression (~0.035 km per 400ms tick)
-                _sohTestGpsDistanceKm += 0.035;
-
-                // Sync simulated vehicle telemetry during test
-                _odo = _sohTestStartOdo + (int) Math.round(_sohTestGpsDistanceKm);
-                _speed = 125.0 + (Math.random() * 12.0);
-
-                // Smoothly update SoC in lockstep with net energy consumed (~26.39 kWh net capacity = 92.60% SoH)
-                double deltaSocPct = (_sohTestTotalNetEnergyKwh / 26.39) * 100.0;
-                _soc = Math.max(10.0, Math.round((_sohTestStartSoc - deltaSocPct) * 100.0) / 100.0);
-
-                // Update Overview UI and open dialogs in real time
-                String gearStr = determineGear();
-                updateUI(gearStr);
-
-                if (_sohTestSampleCount % 38 == 0) {
-                    setText(_messageText, String.format(getString(R.string.update_time_demo_format),
-                            new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date())));
+                    stepDemoOverviewSimulation();
                 }
 
-                updateSohTestLiveUI();
-                _demoSohHandler.postDelayed(this, 400);
+                if (_demoTickCounter % 6 == 0) {
+                    updateNotification();
+                }
+
+                if (_demoLoopHandler != null) {
+                    _demoLoopHandler.postDelayed(this, _isSohTestRunning ? 400 : 600);
+                }
             }
         };
-        _demoSohHandler.postDelayed(_demoSohRunnable, 400);
+        _demoLoopHandler.postDelayed(_demoLoopRunnable, 600);
+    }
+
+    private void stopDemoSimulationLoop() {
+        if (_demoLoopHandler != null && _demoLoopRunnable != null) {
+            _demoLoopHandler.removeCallbacks(_demoLoopRunnable);
+            _demoLoopHandler = null;
+            _demoLoopRunnable = null;
+        }
+    }
+
+    private void stepDemoSohSimulation() {
+        if (!_isSohTestRunning) return;
+
+        double currentAmp;
+        if ((_sohTestSampleCount % 20) >= 16) {
+            // Periodic regenerative braking phase (green power, -16 to -25 kW)
+            currentAmp = -(45.0 + Math.random() * 25.0);
+        } else {
+            // Acceleration / cruising phase (normal power color, +41 to +55 kW)
+            currentAmp = 115.0 + (Math.random() * 35.0);
+        }
+        _volt = 360.0 + (Math.random() * 6.0);
+        _amp = currentAmp;
+        _power = Math.round((_volt * _amp / 1000.0) * 100.0) / 100.0;
+
+        double dtSeconds = 0.4;
+        double deltaKwh = (_power * 1000.0 * dtSeconds) / 3600000.0;
+        _sohTestTotalNetEnergyKwh += deltaKwh;
+        if (deltaKwh > 0) {
+            _sohTestTotalDischargeKwh += deltaKwh;
+        } else {
+            _sohTestTotalRegenKwh += Math.abs(deltaKwh);
+        }
+        _sohTestSampleCount++;
+
+        // Faster, responsive demo distance progression (~0.035 km per 400ms tick)
+        _sohTestGpsDistanceKm += 0.035;
+
+        // Sync simulated vehicle telemetry during test
+        _odo = _sohTestStartOdo + (int) Math.round(_sohTestGpsDistanceKm);
+        _speed = 125.0 + (Math.random() * 12.0);
+        _speedFromCan = (int) Math.round(_speed);
+
+        // Smoothly update SoC in lockstep with net energy consumed (~26.39 kWh net capacity = 92.60% SoH)
+        double deltaSocPct = (_sohTestTotalNetEnergyKwh / 26.39) * 100.0;
+        _soc = Math.max(10.0, Math.round((_sohTestStartSoc - deltaSocPct) * 100.0) / 100.0);
+
+        // Update Overview UI and open dialogs in real time
+        String gearStr = determineGear();
+        updateUI(gearStr);
+
+        if (_sohTestSampleCount % 38 == 0) {
+            setText(_messageText, String.format(getString(R.string.update_time_demo_format),
+                    new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date())));
+        }
+
+        updateSohTestLiveUI();
+    }
+
+    private void stepDemoOverviewSimulation() {
+        if (!_isDemoMode || _isSohTestRunning) return;
+
+        int cycleTick = _demoTickCounter % 60; // 60 ticks * 600ms = 36-second driving cycle
+
+        double targetSpeed;
+        double targetPower;
+        double targetVolt;
+
+        if (cycleTick < 8) {
+            // 1. Stopped at red light (~4.8s): HVAC/accessories running
+            targetSpeed = 0.0;
+            targetPower = 0.32 + (Math.random() * 0.08);
+            targetVolt = 368.4 + (Math.random() * 0.3);
+            _motorRpm = 0;
+        } else if (cycleTick < 22) {
+            // 2. Smooth acceleration up to city speed (~8.4s)
+            double progress = (cycleTick - 8) / 14.0;
+            targetSpeed = Math.round(52.0 * progress * (0.95 + Math.random() * 0.1));
+            targetPower = 12.0 + (16.0 * Math.sin(progress * Math.PI)) + (Math.random() * 2.5);
+            targetVolt = 365.2 - (progress * 1.5) + (Math.random() * 0.4);
+            _motorRpm = (int) (targetSpeed * 50);
+        } else if (cycleTick < 40) {
+            // 3. Cruising around 48 - 54 km/h (~10.8s)
+            targetSpeed = 50.0 + (Math.sin(cycleTick * 0.5) * 3.5) + ((Math.random() - 0.5) * 1.5);
+            targetPower = 6.5 + (Math.sin(cycleTick * 0.4) * 2.5) + (Math.random() * 1.2);
+            targetVolt = 367.2 + (Math.random() * 0.4);
+            _motorRpm = (int) (targetSpeed * 50);
+        } else if (cycleTick < 54) {
+            // 4. Deceleration with regenerative braking (~8.4s)
+            double regenProgress = (cycleTick - 40) / 14.0;
+            targetSpeed = Math.max(0.0, Math.round(50.0 * (1.0 - regenProgress)));
+            if (targetSpeed > 3.0) {
+                targetPower = -(7.5 + (12.0 * Math.sin(regenProgress * Math.PI)) + (Math.random() * 2.0));
+                targetVolt = 370.5 + (regenProgress * 1.5) + (Math.random() * 0.4);
+            } else {
+                targetPower = 0.35;
+                targetVolt = 368.4;
+            }
+            _motorRpm = (int) (targetSpeed * 50);
+        } else {
+            // 5. Coming to a standstill (~3.6s)
+            targetSpeed = 0.0;
+            targetPower = 0.35 + (Math.random() * 0.05);
+            targetVolt = 368.4 + (Math.random() * 0.2);
+            _motorRpm = 0;
+        }
+
+        _speed = Math.max(0.0, Math.round(targetSpeed * 10.0) / 10.0);
+        _speedFromCan = (int) Math.round(_speed);
+        _power = Math.round(targetPower * 100.0) / 100.0;
+        _volt = Math.round(targetVolt * 10.0) / 10.0;
+        _amp = Math.round((_power * 1000.0 / _volt) * 100.0) / 100.0;
+
+        // Distance accumulation
+        if (_speed > 0) {
+            _demoSimulatedDistanceKm += (_speed * (0.6 / 3600.0));
+            if (_demoSimulatedDistanceKm >= 1.0) {
+                _odo += (int) _demoSimulatedDistanceKm;
+                _demoSimulatedDistanceKm -= (int) _demoSimulatedDistanceKm;
+            }
+        }
+
+        // 96 Individual cell voltages: realistic distribution & jitter
+        double avgCellV = _volt / 96.0;
+        double minCell = avgCellV;
+        double maxCell = avgCellV;
+        for (int i = 0; i < 96; i++) {
+            double offset = (((i * 7) % 11) - 5) * 0.0006;
+            double jitter = (Math.random() - 0.5) * 0.002;
+            double cellV = Math.round((avgCellV + offset + jitter) * 1000.0) / 1000.0;
+            _cellVoltages[i] = cellV;
+            if (cellV < minCell) minCell = cellV;
+            if (cellV > maxCell) maxCell = cellV;
+        }
+        _cellMinV = minCell;
+        _cellMaxV = maxCell;
+        _cellAvgV = avgCellV;
+        _cellMinMv = (int) Math.round(_cellMinV * 1000.0);
+        _cellMaxMv = (int) Math.round(_cellMaxV * 1000.0);
+        _cellDeltaMv = _cellMaxMv - _cellMinMv;
+
+        // 6 battery module temperatures with slow realistic thermal drift
+        double tBase = 20.2;
+        _moduleTemps[0] = Math.round((tBase + 0.1 + Math.sin(_demoTickCounter * 0.06) * 0.2) * 10.0) / 10.0;
+        _moduleTemps[1] = Math.round((tBase - 0.4 + Math.cos(_demoTickCounter * 0.05) * 0.2) * 10.0) / 10.0;
+        _moduleTemps[2] = Math.round((tBase + 0.5 + Math.sin(_demoTickCounter * 0.07) * 0.2) * 10.0) / 10.0;
+        _moduleTemps[3] = Math.round((tBase - 0.1 + Math.cos(_demoTickCounter * 0.06) * 0.2) * 10.0) / 10.0;
+        _moduleTemps[4] = Math.round((tBase + 0.3 + Math.sin(_demoTickCounter * 0.05) * 0.2) * 10.0) / 10.0;
+        _moduleTemps[5] = Math.round((tBase - 0.3 + Math.cos(_demoTickCounter * 0.07) * 0.2) * 10.0) / 10.0;
+
+        _batTempMin = _moduleTemps[1];
+        _batTempMax = _moduleTemps[2];
+        for (int m = 0; m < 6; m++) {
+            if (_moduleTemps[m] < _batTempMin) _batTempMin = _moduleTemps[m];
+            if (_moduleTemps[m] > _batTempMax) _batTempMax = _moduleTemps[m];
+        }
+        _batTempSpread = Math.round((_batTempMax - _batTempMin) * 10.0) / 10.0;
+        _batTemp = Math.round(((_batTempMin + _batTempMax) / 2.0) * 10.0) / 10.0;
+
+        // 12V Auxiliary battery
+        _auxBat = Math.round((14.2 + (Math.sin(_demoTickCounter * 0.1) * 0.15) + (Math.random() * 0.05)) * 10.0) / 10.0;
+
+        // GPS Location & Elevation
+        double simLat = 35.6653 + (Math.sin(_demoTickCounter * 0.03) * 0.00035);
+        double simLon = 139.7214 + (Math.cos(_demoTickCounter * 0.03) * 0.00035);
+        _lat = String.format(Locale.ENGLISH, "%.7f", simLat);
+        _lon = String.format(Locale.ENGLISH, "%.7f", simLon);
+        _elevation = Math.round(25.0 + Math.sin(_demoTickCounter * 0.08) * 3.0);
+
+        // Update time heartbeat
+        setText(_messageText, String.format(getString(R.string.update_time_demo_format),
+                new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date())));
+
+        // Update Overview UI and open dialogs in real time
+        String gearStr = determineGear();
+        updateUI(gearStr);
     }
 
     private void updateSohTestLiveUI() {
@@ -1432,11 +1578,10 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         double currentSpeed = _speedFromCan > 0 ? _speedFromCan : _speed;
         if (currentSpeed > 2.0) {
             _instantConsumption = (_power / currentSpeed) * 100.0;
+            setText(_consumptionText, String.format(Locale.ENGLISH, "%+.1f kWh/100km", _instantConsumption));
             if (_instantConsumption < -0.1) {
-                setText(_consumptionText, String.format(Locale.ENGLISH, getString(R.string.consumption_regen_format), _instantConsumption));
                 runOnUiThread(() -> _consumptionText.setTextColor(ContextCompat.getColor(this, R.color.colorRegen)));
             } else {
-                setText(_consumptionText, String.format(Locale.ENGLISH, "%+.1f kWh/100km", _instantConsumption));
                 runOnUiThread(() -> _consumptionText.setTextColor(ContextCompat.getColor(this, R.color.colorText)));
             }
         } else if (_carConnected || _isDemoMode) {
@@ -2045,9 +2190,12 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         _demoButton.setText(R.string.demo_button_stop);
         setText(_messageText, String.format(getString(R.string.update_time_demo_format), new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date())));
         AppToast.show(this, R.string.demo_active_toast);
+
+        startDemoSimulationLoop();
     }
 
     private void disableDemoMode() {
+        stopDemoSimulationLoop();
         if (_isSohTestRunning) {
             stopSohTest();
         }
@@ -2105,6 +2253,8 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         setText(_sohTestLiveDeltaSocText, getString(R.string.soh_test_live_deltasoc_placeholder));
         setText(_sohTestLiveDistanceText, getString(R.string.soh_test_live_distance_placeholder));
         setText(_sohTestLivePowerText, getString(R.string.live_power_placeholder));
+        setText(_sohTestResultDistanceText, getString(R.string.soh_test_result_distance_placeholder));
+        setText(_sohTestResultDeltaSocText, getString(R.string.soh_test_result_deltasoc_placeholder));
         setText(_messageText, getString(R.string.messages));
         AppToast.show(this, R.string.demo_stopped_toast);
     }
@@ -2124,11 +2274,7 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
         if (_isSohTestRunning) {
             _isSohTestRunning = false;
         }
-        if (_demoSohHandler != null && _demoSohRunnable != null) {
-            _demoSohHandler.removeCallbacks(_demoSohRunnable);
-            _demoSohHandler = null;
-            _demoSohRunnable = null;
-        }
+        stopDemoSimulationLoop();
         if (_wakeLock != null && _wakeLock.isHeld()) {
             _wakeLock.release();
             _wakeLock = null;
@@ -2197,11 +2343,10 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
                 }
                 if (_power != 0.0 && _consumptionText != null) {
                     _instantConsumption = (_power / _speed) * 100.0;
+                    _consumptionText.setText(String.format(Locale.ENGLISH, "%+.1f kWh/100km", _instantConsumption));
                     if (_instantConsumption < -0.1) {
-                        _consumptionText.setText(String.format(Locale.ENGLISH, getString(R.string.consumption_regen_format), _instantConsumption));
                         _consumptionText.setTextColor(ContextCompat.getColor(this, R.color.colorRegen));
                     } else {
-                        _consumptionText.setText(String.format(Locale.ENGLISH, "%+.1f kWh/100km", _instantConsumption));
                         _consumptionText.setTextColor(ContextCompat.getColor(this, R.color.colorText));
                     }
                 }

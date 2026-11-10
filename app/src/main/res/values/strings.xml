@@ -8,7 +8,7 @@
     <string name="main_simulation_title">🎮 Demo Mode (Simulation)</string>
     <string name="main_simulation_desc">Explore all features, screens, and diagnostic data without connecting to a vehicle.</string>
     <string name="default_adapter_name">OBD Adapter</string>
-    <string name="consumption_regen_format">%1$.1f kWh/100km (Regen)</string>
+    <string name="consumption_regen_format" tools:ignore="TypographyDashes">%1$+.1f kWh/100km</string>
     <string name="notification_status_format">SoC: %1$.1f%% | Power: %2$.2f kW | Range: %3$d km</string>
     <string name="notification_soh_test_format">SoH Test: %1$.2f kWh | ΔSoC: %2$.1f%% | P: %3$+.1f kW</string>
     <string name="error_format">Error: %1$s</string>
@@ -57,7 +57,7 @@
     <string name="charging_dc">DC Fast Charging (CCS station)</string>
     <string name="charge_power_title">Charge input (into battery)</string>
     <string name="power_instant_title">Instant power</string>
-    <string name="consumption_instant_title">Instant consumption</string>
+    <string name="consumption_instant_title">Instant consumption (GPS)</string>
     <string name="battery_current_title">Traction battery current</string>
     <string name="battery_voltage_title">Traction battery voltage</string>
     <string name="battery_voltage_format">%1$.1f V (%2$.2f V/cell)</string>
@@ -127,10 +127,10 @@
     <!-- Card 4: Vehicle Info & Drive -->
     <string name="vehicle_info">Vehicle info and drive</string>
     <string name="odo">Odometer (ODO)</string>
-    <string name="speed">Vehicle speed</string>
+    <string name="speed">Vehicle speed (GPS)</string>
     <string name="motor_rpm">Electric motor RPM</string>
-    <string name="gear_direction">Drive mode / gear</string>
-    <string name="location_phone_title">GPS coordinates (phone)</string>
+    <string name="gear_direction">Drive mode</string>
+    <string name="location_phone_title">GPS coordinates</string>
     <string name="height_phone_title">Altitude (GPS)</string>
     <string name="vin">Vehicle VIN code</string>
 
@@ -143,12 +143,11 @@
     <string name="can_error">CAN error: %1$s</string>
     <string name="update_time_format">Updated: %1$s</string>
     <string name="update_time_demo_format">Updated: %1$s (Demo)</string>
-    <string name="gear_park">P / Park</string>
-    <string name="gear_drive">D (Drive)</string>
-    <string name="gear_reverse">R (Reverse)</string>
-    <string name="gear_neutral">N (Neutral)</string>
-    <string name="gear_charging">Charging</string>
-    <string name="consumption_stopped">--.- kWh/100km (Stopped)</string>
+    <string name="gear_park">P</string>
+    <string name="gear_drive">D</string>
+    <string name="gear_reverse">R</string>
+    <string name="gear_neutral">N</string>
+    <string name="consumption_stopped" tools:ignore="TypographyDashes">--- kWh/100km</string>
     <string name="aux_bat_charging">%.1fV (Charging)</string>
     <string name="aux_bat_ok">%.1fV (OK)</string>
     <string name="aux_bat_low">%.1fV (Low!)</string>
@@ -159,7 +158,7 @@
     <string name="dash_placeholder">---</string>
     <string name="speed_unit_placeholder">--- km/h</string>
     <string name="motor_rpm_placeholder">--- RPM</string>
-    <string name="gear_placeholder">--- / ---</string>
+    <string name="gear_placeholder">---</string>
     <string name="temp_placeholder" tools:ignore="TypographyDashes">--- °C</string>
     <string name="temp_range_placeholder" tools:ignore="TypographyDashes">--- °C / --- °C</string>
     <string name="temp_delta_placeholder" tools:ignore="TypographyDashes">--- °C</string>
@@ -171,13 +170,15 @@
     <string name="remaining_energy_placeholder" tools:ignore="TypographyDashes">--- kWh</string>
     <string name="kw_placeholder" tools:ignore="TypographyDashes">--- kW</string>
     <string name="live_power_placeholder" tools:ignore="TypographyDashes">--- kW (--- A, --- V)</string>
-    <string name="consumption_placeholder" tools:ignore="TypographyDashes">--- kWh/100km (---)</string>
+    <string name="consumption_placeholder" tools:ignore="TypographyDashes">--- kWh/100km</string>
     <string name="soh_test_result_consumption_placeholder" tools:ignore="TypographyDashes">--- kWh/100km</string>
     <string name="soh_test_live_energy_placeholder" tools:ignore="TypographyDashes">0.00 kWh (+0.00 / -0.00)</string>
     <string name="soh_test_live_time_placeholder">00:00:00</string>
     <string name="soh_test_live_samples_placeholder">0</string>
     <string name="soh_test_live_deltasoc_placeholder" tools:ignore="TypographyDashes">0.00 %</string>
     <string name="soh_test_live_distance_placeholder" tools:ignore="TypographyDashes">0.0 km / 0 km</string>
+    <string name="soh_test_result_distance_placeholder" tools:ignore="TypographyDashes">--- km / --- km\n(--- km → --- km)</string>
+    <string name="soh_test_result_deltasoc_placeholder" formatted="false" tools:ignore="TypographyDashes">--- %\n(--- % → --- %)</string>
     <string name="amp_placeholder" tools:ignore="TypographyDashes">--- A</string>
     <string name="volt_placeholder" tools:ignore="TypographyDashes">--- V</string>
     <string name="battery_voltage_placeholder" tools:ignore="TypographyDashes">--- V (--- V/cell)</string>
