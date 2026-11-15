@@ -1,13 +1,29 @@
 apply plugin: 'com.android.application'
 
+def calculateVersionCode = { String vName ->
+    try {
+        def clean = vName.replaceAll("[^0-9.]", "")
+        def parts = clean.tokenize('.')
+        int major = parts.size() > 0 ? parts[0].toInteger() : 1
+        int minor = parts.size() > 1 ? parts[1].toInteger() : 0
+        int patch = parts.size() > 2 ? parts[2].toInteger() : 0
+        return (major * 1000000) + (minor * 1000) + patch
+    } catch (Exception ignored) {
+        return 1000000
+    }
+}
+
+def resolvedVersionName = project.hasProperty('appVersionName') ? project.property('appVersionName').toString() : "1.0.0"
+def resolvedVersionCode = project.hasProperty('appVersionCode') ? project.property('appVersionCode').toString().toInteger() : calculateVersionCode(resolvedVersionName)
+
 android {
     compileSdk 34
     defaultConfig {
         applicationId 'cz.helicode.hondaescanner'
         minSdkVersion 26
         targetSdk 34
-        versionCode 1
-        versionName "1.0"
+        versionCode resolvedVersionCode
+        versionName resolvedVersionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures {
@@ -17,6 +33,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
         }
     }
     compileOptions {

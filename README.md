@@ -4,6 +4,20 @@ A lightweight Android OBD-II diagnostic and battery health monitoring tool tailo
 
 Connects via Bluetooth to read proprietary UDS parameters and real-time telemetry directly from the vehicle's onboard CAN bus.
 
+[![Latest Release](https://img.shields.io/github/v/release/Heshtor/honda-e-scanner?color=blue&label=Latest%20Release&logo=github)](https://github.com/Heshtor/honda-e-scanner/releases/latest)
+[![License: EUPL v1.2](https://img.shields.io/badge/License-EUPL%20v1.2-blue.svg)](LICENSE)
+
+---
+
+## 📲 Download & Installation
+
+👉 **[Direct Download: HondaEScanner.apk](https://github.com/Heshtor/honda-e-scanner/releases/latest/download/HondaEScanner.apk)**
+
+### Installation Steps:
+1. Tap the direct download link above to download `HondaEScanner.apk` onto your Android device.
+2. Open the downloaded `.apk` file.
+3. When prompted by Android, allow **"Install unknown apps"** to complete the installation.
+
 ---
 
 ## ✨ Features
@@ -17,7 +31,7 @@ Connects via Bluetooth to read proprietary UDS parameters and real-time telemetr
 * **Customizable App Icons:** Choose from 6 app launcher icons in Settings to match your Honda e exterior paint color (White, Black, Grey, Red, Blue, Yellow).
 * **CAN Logger & Export:** Records raw CAN traffic with one-tap export and share via Android FileProvider.
 * **Offline Demo Mode:** Built-in interactive simulation with synthetic Honda e telemetry and SoH drive test (no car needed).
-* **Dual Theme & Languages:** Modern Dark & Light modes styled after the Honda e cockpit, with full English and Czech support.
+* **Dual Theme & Languages:** Modern Dark & Light modes with full English and Czech support.
 
 ---
 

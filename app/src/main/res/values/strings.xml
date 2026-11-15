@@ -193,7 +193,8 @@
     <string name="settings_about_title">ℹ️ About Application</string>
     <string name="settings_about_desc">Diagnostic tool and battery monitor developed for the Honda e electric vehicle.</string>
     <string name="about_app_label">Application:</string>
-    <string name="about_app_value">Honda e Scanner v1.0</string>
+    <string name="about_app_value">Honda e Scanner v1.0.0</string>
+    <string name="about_app_value_format">Honda e Scanner v%s</string>
     <string name="about_author_label">Author:</string>
     <string name="about_author_value">Martin Hruboš (Heshtor)</string>
     <string name="about_license_label">License:</string>

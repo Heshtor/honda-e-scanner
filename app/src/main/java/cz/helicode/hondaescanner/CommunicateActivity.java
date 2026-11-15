@@ -459,6 +459,11 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
 
         initAppIconSettings();
 
+        TextView aboutAppText = findViewById(R.id.about_app_value_text);
+        if (aboutAppText != null) {
+            aboutAppText.setText(getString(R.string.about_app_value_format, BuildConfig.VERSION_NAME));
+        }
+
         // Battery & Range Card
         _rangeDashText = findViewById(R.id.communicate_range_dash);
         _socDashText = findViewById(R.id.communicate_soc_dash);
