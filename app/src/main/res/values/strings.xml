@@ -114,6 +114,7 @@
     <string name="soh_test_result_duration_title">Test duration</string>
     <string name="soh_test_locked_toast">SoH measurement is active. Stop test before switching tabs.</string>
     <string name="soh_test_not_enough_soc" formatted="false">SoC decrease was too small (&lt; 1 %). For a reliable calculation, discharge at least 30–60 % of battery.</string>
+    <string name="soh_test_not_connected">To start the test, connect to the vehicle or activate Demo mode first.</string>
 
     <!-- Card 3: Temperatures & Diagnostics -->
     <string name="temperatures_and_diagnostics">Temperatures and Diagnostics</string>

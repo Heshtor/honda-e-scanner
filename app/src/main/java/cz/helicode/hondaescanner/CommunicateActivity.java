@@ -1039,6 +1039,10 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
 
     private void onToggleSohTestClicked() {
         if (!_isSohTestRunning) {
+            if (!_carConnected && !_isDemoMode) {
+                AppToast.show(this, R.string.soh_test_not_connected);
+                return;
+            }
             startSohTest();
         } else {
             stopSohTest();
@@ -1046,6 +1050,10 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
     }
 
     private void startSohTest() {
+        if (!_carConnected && !_isDemoMode) {
+            AppToast.show(this, R.string.soh_test_not_connected);
+            return;
+        }
         // Acquire wake lock to keep CPU awake even if screen turns off
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         if (pm != null && (_wakeLock == null || !_wakeLock.isHeld())) {

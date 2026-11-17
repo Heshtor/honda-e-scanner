@@ -114,6 +114,7 @@
     <string name="soh_test_result_duration_title">Doba trvání testu</string>
     <string name="soh_test_locked_toast">Měření SoH je aktivní. Pro přepnutí záložky nejprve ukončete test.</string>
     <string name="soh_test_not_enough_soc" formatted="false">Pokles SoC byl příliš malý (&lt; 1 %). Pro spolehlivý výpočet vybijte alespoň 30–60 % baterie.</string>
+    <string name="soh_test_not_connected">Pro zahájení testu se nejprve připojte k vozidlu nebo aktivujte Demo režim.</string>
 
     <!-- Card 3: Temperatures & Diagnostics -->
     <string name="temperatures_and_diagnostics">Teploty a diagnostika</string>
