@@ -5,6 +5,7 @@ A lightweight Android OBD-II diagnostic and battery health monitoring tool tailo
 Connects via Bluetooth to read proprietary UDS parameters and real-time telemetry directly from the vehicle's onboard CAN bus.
 
 [![Latest Release](https://img.shields.io/github/v/release/Heshtor/honda-e-scanner?color=blue&label=Latest%20Release&logo=github)](https://github.com/Heshtor/honda-e-scanner/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/Heshtor/honda-e-scanner/HondaEScanner.apk?color=blue&logo=github)](https://github.com/Heshtor/honda-e-scanner/releases)
 [![License: EUPL v1.2](https://img.shields.io/badge/License-EUPL%20v1.2-blue.svg)](LICENSE)
 
 ---
@@ -55,6 +56,7 @@ Connects via Bluetooth to read proprietary UDS parameters and real-time telemetr
 ## 📄 License & Author
 
 * **Author:** Martin Hruboš ([@Heshtor](https://github.com/Heshtor))
+* **Website:** [helicode.cz](https://helicode.cz)
 * **License:** [European Union Public Licence (EUPL) v1.2](LICENSE)
 
 The European Union Public Licence (EUPL) is a copyleft free and open-source software license created on the initiative of and approved by the European Commission in 23 official languages of the European Union. See the [LICENSE](LICENSE) file for the full legal text.

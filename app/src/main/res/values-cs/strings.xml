@@ -198,6 +198,8 @@
     <string name="about_app_value_format">Honda e Scanner v%s</string>
     <string name="about_author_label">Autor:</string>
     <string name="about_author_value">Martin Hruboš (Heshtor)</string>
+    <string name="about_website_label">Web:</string>
+    <string name="about_website_value">helicode.cz</string>
     <string name="about_license_label">Licence:</string>
     <string name="about_license_value">EUPL-1.2 (Open Source)</string>
     <string name="about_libraries_label">Použité knihovny a licence:</string>

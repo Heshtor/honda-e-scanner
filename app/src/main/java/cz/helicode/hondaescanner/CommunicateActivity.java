@@ -457,6 +457,18 @@ public class CommunicateActivity extends AppCompatActivity implements LocationLi
             });
         }
 
+        View websiteRow = findViewById(R.id.about_website_row);
+        if (websiteRow != null) {
+            websiteRow.setOnClickListener(v -> {
+                try {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://helicode.cz"));
+                    startActivity(intent);
+                } catch (Exception e) {
+                    Log.e(TAG, "Cannot open browser for Website", e);
+                }
+            });
+        }
+
         initAppIconSettings();
 
         TextView aboutAppText = findViewById(R.id.about_app_value_text);

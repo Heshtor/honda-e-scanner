@@ -2043,6 +2043,33 @@
                                 android:textStyle="bold" />
                         </LinearLayout>
 
+                        <!-- Row: Website -->
+                        <LinearLayout
+                            android:id="@+id/about_website_row"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/about_website_label"
+                                android:textColor="@color/colorTextSecondary"
+                                android:textSize="14sp" />
+
+                            <TextView
+                                android:id="@+id/about_website_value_text"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/about_website_value"
+                                android:textColor="@color/colorAccent"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
                         <!-- Row: License -->
                         <LinearLayout
                             android:layout_width="match_parent"
