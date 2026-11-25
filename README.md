@@ -1,12 +1,17 @@
-# 🚗 Honda e Scanner
+<div align="center">
 
-A lightweight Android OBD-II diagnostic and battery health monitoring tool tailored specifically for the **Honda e** electric vehicle.
+<img src="docs/logo.png" alt="Moonlight‑Web logo" width="128" />
 
+# Honda e Scanner
+
+A lightweight Android OBD-II diagnostic and battery health monitoring tool tailored specifically for the **Honda e** electric vehicle.\
 Connects via Bluetooth to read proprietary UDS parameters and real-time telemetry directly from the vehicle's onboard CAN bus.
 
 [![Latest Release](https://img.shields.io/github/v/release/Heshtor/honda-e-scanner?color=blue&label=Latest%20Release&logo=github)](https://github.com/Heshtor/honda-e-scanner/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/Heshtor/honda-e-scanner/HondaEScanner.apk?color=blue&logo=github)](https://github.com/Heshtor/honda-e-scanner/releases)
+[![Downloads](https://img.shields.io/github/downloads/Heshtor/honda-e-scanner/total?color=blue&logo=github)](https://github.com/Heshtor/honda-e-scanner/releases)
 [![License: EUPL v1.2](https://img.shields.io/badge/License-EUPL%20v1.2-blue.svg)](LICENSE)
+
+</div>
 
 ---
 
@@ -45,11 +50,12 @@ Connects via Bluetooth to read proprietary UDS parameters and real-time telemetr
 
 ---
 
-## 🛠️ Libraries & Credits
+## 🛠️ Architecture & Technologies
 
-* **[Android Bluetooth Serial](https://github.com/harryjph/android-bluetooth-serial)** (Apache License 2.0) – Bluetooth Classic (RFCOMM/SPP) connection handling.
-* **[RxJava 2 & RxAndroid](https://github.com/ReactiveX/RxJava)** (Apache License 2.0) – Reactive stream processing.
-* **[AndroidX](https://developer.android.com/jetpack/androidx) & [Material Components](https://github.com/material-components/material-components-android)** (Apache License 2.0) – Architecture components, ViewModel/LiveData, and Material UI.
+* **Kotlin & Coroutines / Flow** – Modern 100% Kotlin codebase with structured concurrency and native Android Bluetooth Classic (RFCOMM/SPP) communication.
+* **MVVM Architecture** – Clean separation of UI, ViewModels (`StateFlow` / `SharedFlow`), and data/protocol repositories.
+* **[Jetpack Compose & Material 3](https://developer.android.com/compose)** (Apache License 2.0) – Declarative UI with adaptive Dark & Light themes.
+* **[AndroidX Lifecycle & Navigation](https://developer.android.com/jetpack/androidx)** (Apache License 2.0) – Single-Activity navigation and lifecycle-aware state collection.
 
 ---
 

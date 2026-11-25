@@ -63,9 +63,9 @@
     <string name="battery_voltage_format">%1$.1f V (%2$.2f V/cell)</string>
 
     <!-- Navigation Tabs -->
-    <string name="tab_overview">📊 Overview</string>
-    <string name="tab_soh_test">🔋 SoH Test</string>
-    <string name="tab_settings">⚙️ Settings</string>
+    <string name="tab_overview">Overview</string>
+    <string name="tab_soh_test">SoH Test</string>
+    <string name="tab_settings">Settings</string>
 
     <!-- Settings Tab -->
     <string name="settings_demo_title">Simulation and Demo Mode</string>
@@ -121,7 +121,6 @@
     <string name="bat_temp_title">Traction battery temperature</string>
     <string name="bat_temp_range_title">Temperature range (min / max)</string>
     <string name="bat_temp_delta_title">Battery temperature spread (Δ)</string>
-    <string name="inverter_temp">Inverter / PCU temperature</string>
     <string name="amb_temp">Ambient temperature</string>
     <string name="aux_bat">12V auxiliary battery</string>
 
@@ -130,8 +129,8 @@
     <string name="odo">Odometer (ODO)</string>
     <string name="speed">Vehicle speed (GPS)</string>
     <string name="motor_rpm">Electric motor RPM</string>
-    <string name="gear_direction">Drive mode</string>
-    <string name="location_phone_title">GPS coordinates</string>
+    <string name="gear_direction">Drive mode (GPS)</string>
+    <string name="location_phone_title">Phone GPS coordinates</string>
     <string name="height_phone_title">Altitude (GPS)</string>
     <string name="vin">Vehicle VIN code</string>
 
@@ -149,9 +148,9 @@
     <string name="gear_reverse">R</string>
     <string name="gear_neutral">N</string>
     <string name="consumption_stopped" tools:ignore="TypographyDashes">--- kWh/100km</string>
-    <string name="aux_bat_charging">%.1fV (Charging)</string>
-    <string name="aux_bat_ok">%.1fV (OK)</string>
-    <string name="aux_bat_low">%.1fV (Low!)</string>
+    <string name="aux_bat_charging">%.1f V (Charging)</string>
+    <string name="aux_bat_ok">%.1f V (OK)</string>
+    <string name="aux_bat_low">%.1f V (Low!)</string>
     <string name="soh_test_cnetto_format">%.2f kWh (nominal 28.5 kWh)</string>
     <string name="soh_test_samples_format">%1$02d:%2$02d:%3$02d (%4$d samples)</string>
 
@@ -167,7 +166,7 @@
     <string name="soc_placeholder" tools:ignore="TypographyDashes">--- %</string>
     <string name="soc_range_placeholder" tools:ignore="TypographyDashes">--- % / --- %</string>
     <string name="soc_delta_placeholder" tools:ignore="TypographyDashes">--- %</string>
-    <string name="soh_placeholder" tools:ignore="TypographyDashes">--- % (--- Ah)</string>
+    <string name="soh_placeholder" formatted="false" tools:ignore="TypographyDashes">--- % (--- Ah)</string>
     <string name="remaining_energy_placeholder" tools:ignore="TypographyDashes">--- kWh</string>
     <string name="kw_placeholder" tools:ignore="TypographyDashes">--- kW</string>
     <string name="live_power_placeholder" tools:ignore="TypographyDashes">--- kW (--- A, --- V)</string>
@@ -203,7 +202,7 @@
     <string name="about_license_label">License:</string>
     <string name="about_license_value">EUPL-1.2 (Open Source)</string>
     <string name="about_libraries_label">Used Libraries &amp; Credits:</string>
-    <string name="about_libraries_list">• Android Bluetooth Serial (Apache 2.0)\n• ReactiveX RxJava 2 &amp; RxAndroid (Apache 2.0)\n• Google AndroidX &amp; Material Components (Apache 2.0)</string>
+    <string name="about_libraries_list">• Kotlin &amp; Coroutines (Apache 2.0)\n• Jetpack Compose &amp; Material 3 (Apache 2.0)\n• AndroidX Lifecycle &amp; Navigation (Apache 2.0)</string>
     <string name="settings_github_button">🌐 Open GitHub Repository</string>
 
     <!-- Cell Voltages & Temperatures Dialogs -->

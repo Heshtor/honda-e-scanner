@@ -63,9 +63,9 @@
     <string name="battery_voltage_format">%1$.1f V (%2$.2f V/čl.)</string>
 
     <!-- Navigation Tabs -->
-    <string name="tab_overview">📊 Přehled</string>
-    <string name="tab_soh_test">🔋 Test SoH</string>
-    <string name="tab_settings">⚙️ Nastavení</string>
+    <string name="tab_overview">Přehled</string>
+    <string name="tab_soh_test">Test SoH</string>
+    <string name="tab_settings">Nastavení</string>
 
     <!-- Settings Tab -->
     <string name="settings_demo_title">Simulace a demo režim</string>
@@ -121,7 +121,6 @@
     <string name="bat_temp_title">Teplota trakční baterie</string>
     <string name="bat_temp_range_title">Rozsah teplot (min / max)</string>
     <string name="bat_temp_delta_title">Rozptyl teplot baterie (Δ)</string>
-    <string name="inverter_temp">Teplota invertoru / PCU</string>
     <string name="amb_temp">Venkovní teplota okolí</string>
     <string name="aux_bat">12V palubní akumulátor</string>
 
@@ -130,8 +129,8 @@
     <string name="odo">Tachometr (ODO)</string>
     <string name="speed">Rychlost vozidla (GPS)</string>
     <string name="motor_rpm">Otáčky elektromotoru</string>
-    <string name="gear_direction">Jízdní režim</string>
-    <string name="location_phone_title">GPS souřadnice</string>
+    <string name="gear_direction">Jízdní režim (GPS)</string>
+    <string name="location_phone_title">GPS souřadnice telefonu</string>
     <string name="height_phone_title">Nadmořská výška (GPS)</string>
     <string name="vin">VIN kód vozidla</string>
 
@@ -149,9 +148,9 @@
     <string name="gear_reverse">R</string>
     <string name="gear_neutral">N</string>
     <string name="consumption_stopped" tools:ignore="TypographyDashes">--- kWh/100km</string>
-    <string name="aux_bat_charging">%.1fV (Dobíjí)</string>
-    <string name="aux_bat_ok">%.1fV (OK)</string>
-    <string name="aux_bat_low">%.1fV (Nízké!)</string>
+    <string name="aux_bat_charging">%.1f V (Dobíjí)</string>
+    <string name="aux_bat_ok">%.1f V (OK)</string>
+    <string name="aux_bat_low">%.1f V (Nízké!)</string>
     <string name="soh_test_cnetto_format">%.2f kWh (nominál 28.5 kWh)</string>
     <string name="soh_test_samples_format">%1$02d:%2$02d:%3$02d (%4$d vzorků)</string>
 
@@ -167,7 +166,7 @@
     <string name="soc_placeholder" tools:ignore="TypographyDashes">--- %</string>
     <string name="soc_range_placeholder" tools:ignore="TypographyDashes">--- % / --- %</string>
     <string name="soc_delta_placeholder" tools:ignore="TypographyDashes">--- %</string>
-    <string name="soh_placeholder" tools:ignore="TypographyDashes">--- % (--- Ah)</string>
+    <string name="soh_placeholder" formatted="false" tools:ignore="TypographyDashes">--- % (--- Ah)</string>
     <string name="remaining_energy_placeholder" tools:ignore="TypographyDashes">--- kWh</string>
     <string name="kw_placeholder" tools:ignore="TypographyDashes">--- kW</string>
     <string name="live_power_placeholder" tools:ignore="TypographyDashes">--- kW (--- A, --- V)</string>
@@ -203,7 +202,7 @@
     <string name="about_license_label">Licence:</string>
     <string name="about_license_value">EUPL-1.2 (Open Source)</string>
     <string name="about_libraries_label">Použité knihovny a licence:</string>
-    <string name="about_libraries_list">• Android Bluetooth Serial (Apache 2.0)\n• ReactiveX RxJava 2 &amp; RxAndroid (Apache 2.0)\n• Google AndroidX &amp; Material Components (Apache 2.0)</string>
+    <string name="about_libraries_list">• Kotlin &amp; Coroutines (Apache 2.0)\n• Jetpack Compose &amp; Material 3 (Apache 2.0)\n• AndroidX Lifecycle &amp; Navigation (Apache 2.0)</string>
     <string name="settings_github_button">🌐 Otevřít GitHub repozitář</string>
 
     <!-- Cell Voltages & Temperatures Dialogs -->
