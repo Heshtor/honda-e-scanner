@@ -36,12 +36,13 @@ jobs:
 
       - name: Determine Version
         id: version_info
+        env:
+          RAW_TAG: ${{ github.event.release.tag_name || github.event.inputs.version_tag || 'v1.0.0' }}
         run: |
-          RAW_TAG="${{ github.event.release.tag_name || github.event.inputs.version_tag || 'v1.0.0' }}"
           # Clean tag: remove leading 'v' or 'V' for versionName
-          VERSION_NAME=$(echo "$RAW_TAG" | sed -e 's/^[vV]//')
-          echo "tag_name=$RAW_TAG" >> $GITHUB_OUTPUT
-          echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
+          VERSION_NAME=$(printf '%s' "$RAW_TAG" | sed -e 's/^[vV]//')
+          echo "tag_name=$RAW_TAG" >> "$GITHUB_OUTPUT"
+          echo "version_name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
           echo "Building for Tag: $RAW_TAG, VersionName: $VERSION_NAME"
 
       - name: Decode Release Keystore
@@ -58,12 +59,13 @@ jobs:
 
       - name: Build Release APK
         env:
+          APP_VERSION_NAME: ${{ steps.version_info.outputs.version_name }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           ./gradlew assembleRelease \
-            -PappVersionName="${{ steps.version_info.outputs.version_name }}" \
+            -PappVersionName="$APP_VERSION_NAME" \
             --no-daemon
 
       - name: Clean up Release Keystore
